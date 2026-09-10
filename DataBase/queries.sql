@@ -10,7 +10,6 @@ SELECT * FROM equipos
 WHERE id = $1;
 
 -- name: ListEquipos :many
--- Lista todos los registros
 SELECT * FROM equipos 
 ORDER BY nombre ASC;
 
