@@ -12,7 +12,7 @@ La aplicación permitirá registrar y actualizar partidos de fútbol. Para repre
 -Fecha y Hora(fecha)
 
 # Cómo ejecutar la aplicación:
-1. Abre una terminal y posiciónate en el directorio raíz del proyecto (donde se encuentra `main.go`).
+1. Abre una terminal y posiciónate en el directorio raíz del proyecto (donde se encuentra `main.go`). Tener en cuenta que se debe tener una version Go 1.20 o superior.
 
 2. Ejecuta el servidor con el siguiente comando: go run main.go
     Tener en cuenta: al ejecutar el comando debería aparecer: 
