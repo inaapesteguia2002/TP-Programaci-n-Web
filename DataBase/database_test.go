@@ -5,25 +5,27 @@ import (
 	"database/sql"
 	"testing"
 
-	_ "github.com/lib/pq" // importa el driver de Postgres
+	_ "github.com/jackc/pgx/v5/stdlib" // importa el driver de Postgres
 )
 
 func TestIntegracionBD(t *testing.T) {
+	ctx := context.Background()
+
 	// 1.Configuramos la conexion a la base de datos local (la que levantará el Makefile)
-	connStr := "postgres://postgres:postgres@localhost:5432/DeRabona?sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
+	connStr := "postgres://postgres:tu_contraseña@localhost:5432/deRabona_db?sslmode=disable"
+
+	db, err := sql.Open("pgx", connStr)
 	if err != nil {
 		t.Fatalf("Error al abrir la conexión: %v", err)
 	}
 	defer db.Close()
 
 	// Verificamos que la base de datos responde
-	if err := db.Ping(); err != nil {
+	if err := db.PingContext(ctx); err != nil {
 		t.Fatalf("La base de datos no está respondiendo: %v", err)
 	}
 
 	queries := New(db)
-	ctx := context.Background()
 
 	// 2.Crear una Liga
 	liga, err := queries.CreateLiga(ctx, CreateLigaParams{
