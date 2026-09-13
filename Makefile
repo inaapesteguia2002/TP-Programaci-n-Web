@@ -5,7 +5,7 @@ test:
 	docker compose down -v --remove-orphans || true
 
 	# 2. Generación de código Go con sqlc
-	sqlc generate
+	~/go/bin/sqlc generate
 
 	# 3. Levantado contenedor de PostgreSQL
 	docker compose up -d postgresql
