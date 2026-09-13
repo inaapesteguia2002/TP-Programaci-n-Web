@@ -52,5 +52,5 @@ func TestIntegracionBD(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fallo al agregar a la tabla de posiciones: %v", err)
 	}
-	t.Logf("Equipo ingresado a la tabla de posiciones con 0 puntos.", tabla.Puntos)
+	t.Log("Equipo ingresado a la tabla de posiciones con 0 puntos.", tabla.Puntos)
 }
