@@ -1,0 +1,16 @@
+services:
+  postgresql:
+    image: "postgres:16"
+    container_name: postgres_container
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: deRabona_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: tu_contraseña
+    volumes: 
+      - postgres_data:/var/lib/postgresql/data # hace que los datos persistan aunque se borre el contenedor
+      - ./DataBase/schema:/docker-entrypoint-initdb.d # inicializa la estructura de la base de datos la primera vez que se crea el contenedor
+
+volumes: 
+  postgres_data:
