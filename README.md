@@ -20,7 +20,7 @@ Para evaluar este trabajo práctico, el proyecto cuenta con un script de automat
 * Make instalado en el sistema
 
 ## Pasos para probar el proyecto
-1. Clonar el repositorio y abrir una terminal en el directorio raiz.
+1. Clonar el repositorio (>git:Clone y luego se pega la url del repositorio) y abrir una terminal en el directorio raiz.
 2. Posicionarse en la rama correspondiente a la entrega:
    ```bash
    git fetch origin
