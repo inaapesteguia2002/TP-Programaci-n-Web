@@ -23,6 +23,7 @@ Para evaluar este trabajo práctico, el proyecto cuenta con un script de automat
 1. Clonar el repositorio y abrir una terminal en el directorio raiz.
 2. Posicionarse en la rama correspondiente a la entrega:
    ```bash
+   git fetch origin
    git checkout tp2
    ```
 3. En la terminal escribir el comando:
