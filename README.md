@@ -25,4 +25,7 @@ Para evaluar este trabajo práctico, el proyecto cuenta con un script de automat
    ```bash
    git checkout tp2
    ```
-3. En la terminal escribir el comando: make test
+3. En la terminal escribir el comando:
+   ```bash
+   make test
+   ```
