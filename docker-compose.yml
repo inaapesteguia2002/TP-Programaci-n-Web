@@ -12,5 +12,15 @@ services:
       - postgres_data:/var/lib/postgresql/data # hace que los datos persistan aunque se borre el contenedor
       - ./DataBase/schema:/docker-entrypoint-initdb.d # inicializa la estructura de la base de datos la primera vez que se crea el contenedor
 
+api:
+  build: .
+  container_name: api_deRabona
+  ports:
+    - "8080:8080"
+  depends_on:
+    - postgresql
+  environment:
+    - DATABASE_URL=postgres://postgres:tu_contraseña@postgres_container:5432/deRabona_db?sslmode=disable
+
 volumes: 
   postgres_data:
