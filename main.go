@@ -12,7 +12,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib" // Driver de PostgreSQL (se registra internamente)
 
 	"DeRabona/DataBase" // Repositorio de consultas generado por sqlc
-	"DeRabona/Logic"
+	"DeRabona/Logic"    // Repositorio donde se encuentran los Handlers
 )
 
 func main() {
@@ -42,10 +42,13 @@ func main() {
 
 	http.HandleFunc("/equipos", app.EquiposHandler)
 	http.HandleFunc("/equipos/", app.EquipoHandler)
+
 	http.HandleFunc("/ligas", app.LigasHandler)
 	http.HandleFunc("/ligas/", app.LigaHandler)
+
 	http.HandleFunc("/partidos", app.PartidosHandler)
 	http.HandleFunc("/partidos/", app.PartidoHandler)
+
 	http.HandleFunc("/tabla", app.TablasHandler)
 	http.HandleFunc("/tabla/", app.TablaLigaHandler)
 	http.HandleFunc("/tabla-equipo", app.TablaAccionHandler)
