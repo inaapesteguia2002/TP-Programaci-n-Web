@@ -20,3 +20,4 @@ test:
 
 	# 6. Limpieza posterior
 	docker compose down -v
+	
