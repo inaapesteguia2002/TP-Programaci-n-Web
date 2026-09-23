@@ -42,6 +42,8 @@ func main() {
 
 	http.HandleFunc("/equipos", app.EquiposHandler)
 	http.HandleFunc("/equipos/", app.EquipoHandler)
+	http.HandleFunc("/ligas", app.LigasHandler)
+	http.HandleFunc("/ligas/", app.LigaHandler)
 
 	staticDir := "./static"
 	fileServer := http.FileServer(http.Dir(staticDir))
