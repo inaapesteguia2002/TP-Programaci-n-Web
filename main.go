@@ -17,12 +17,12 @@ import (
 
 func main() {
 
-	connSrt := os.Getenv("DATABASE_URL")
-	if connSrt == "" {
-		connSrt = "postgres://postgres:tu_contraseña@localhost:5432/deRabona_db?sslmode=disable"
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		connStr = "postgres://postgres:tu_contraseña@localhost:5432/deRabona_db?sslmode=disable"
 	}
 
-	db, err := sql.Open("pgx", connSrt)
+	db, err := sql.Open("pgx", connStr)
 	if err != nil {
 		log.Fatalf("Error al abrir la conexion: %v", err)
 	}
