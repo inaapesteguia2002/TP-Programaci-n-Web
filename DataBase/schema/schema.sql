@@ -31,7 +31,7 @@ CREATE TABLE partidos(
     liga_id INT NOT NULL REFERENCES ligas(id) ON DELETE CASCADE,
     equipo_local_id INT NOT NULL REFERENCES equipos(id),
     equipo_visitante_id INT NOT NULL REFERENCES equipos(id),
-    goles_local INT NOT NULL DEFAULT 0,
-    goles_visitante INT NOT NULL DEFAULT 0,
-    estado VARCHAR(20) NOT NULL DEFAULT 'pendiente'
+    goles_local INT,
+    goles_visitante INT,
+    estado VARCHAR(20) DEFAULT 'pendiente'
 );
