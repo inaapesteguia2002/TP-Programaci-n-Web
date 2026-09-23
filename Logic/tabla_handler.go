@@ -1,12 +1,13 @@
 package Logic
 
 import (
-	"DeRabona/DataBase"
 	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"DeRabona/DataBase"
 )
 
 // DTO para registrar un equipo en la tabla de una liga
