@@ -1,10 +1,16 @@
-
 # 1. GESTIÓN DE EQUIPOS
 
-# Crear un equipo
+# Crear el equipo local (ID 1)
 POST http://localhost:8080/equipos
 {
   "nombre": "Boca Juniors"
+}
+HTTP/1.1 201
+
+# Crear el equipo visitante (ID 2)
+POST http://localhost:8080/equipos
+{
+  "nombre": "River Plate"
 }
 HTTP/1.1 201
 
@@ -15,7 +21,7 @@ HTTP/1.1 200
 
 # 2. GESTIÓN DE LIGAS
 
-# Crear una liga
+# Crear una liga (ID 1)
 POST http://localhost:8080/ligas
 {
   "nombre": "Liga Profesional",

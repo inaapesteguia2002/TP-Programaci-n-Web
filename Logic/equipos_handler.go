@@ -2,6 +2,7 @@ package Logic
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -62,6 +63,7 @@ func (app *APIHandler) createEquipo(w http.ResponseWriter, r *http.Request) {
 	// sqlc pide un string directamente al haber un solo parámetro
 	nuevoEquipo, err := app.Repo.CreateEquipo(r.Context(), req.Nombre)
 	if err != nil {
+		fmt.Println("ERROR REAL AL CREAR EQUIPO:", err)
 		http.Error(w, "Error al guardar en la base de datos", http.StatusInternalServerError)
 		return
 	}
