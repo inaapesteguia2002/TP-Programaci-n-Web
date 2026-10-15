@@ -211,6 +211,53 @@ func (q *Queries) GetPartido(ctx context.Context, id int32) (Partido, error) {
 	return i, err
 }
 
+const getTablaPorLiga = `-- name: GetTablaPorLiga :many
+SELECT e.nombre as equipo, t.puntos, t.partidos_jugados, t.partidos_ganados, t.partidos_empatados, t.partidos_perdidos
+FROM tabla_posiciones t
+JOIN equipos e ON t.equipo_id = e.id
+WHERE t.liga_id = $1
+ORDER BY t.puntos DESC, e.nombre ASC
+`
+
+type GetTablaPorLigaRow struct {
+	Equipo            string
+	Puntos            sql.NullInt32
+	PartidosJugados   sql.NullInt32
+	PartidosGanados   sql.NullInt32
+	PartidosEmpatados sql.NullInt32
+	PartidosPerdidos  sql.NullInt32
+}
+
+func (q *Queries) GetTablaPorLiga(ctx context.Context, ligaID int32) ([]GetTablaPorLigaRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTablaPorLiga, ligaID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTablaPorLigaRow
+	for rows.Next() {
+		var i GetTablaPorLigaRow
+		if err := rows.Scan(
+			&i.Equipo,
+			&i.Puntos,
+			&i.PartidosJugados,
+			&i.PartidosGanados,
+			&i.PartidosEmpatados,
+			&i.PartidosPerdidos,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listEquipos = `-- name: ListEquipos :many
 SELECT id, nombre FROM equipos 
 ORDER BY nombre ASC
