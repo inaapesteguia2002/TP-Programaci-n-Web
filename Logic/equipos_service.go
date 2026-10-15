@@ -16,8 +16,6 @@ func (s *EquiposService) CreateEquipo(ctx context.Context, nombre string) (DataB
 	if nombre == "" {
 		return DataBase.Equipo{}, errors.New("el nombre del equipo no puede estar vacío")
 	}
-	// Acá podrías agregar más reglas (ej. validar longitud, formato, etc.)
-
 	return s.Repo.CreateEquipo(ctx, nombre)
 }
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"      // Manejo de tiempos límite (timeouts) y cancelación de peticiones// Manejo de tiempos límite (timeouts) y cancelación de peticiones
+	"context"      // Manejo de tiempos límite (timeouts) y cancelación de peticiones
 	"database/sql" // Interfaz genérica para interactuar con bases de datos relacionales
 	"fmt"          // Entrada y salida de texto (impresión en consola)
 	"log"          // Registro de eventos y manejo de errores críticos (Fatalf)
@@ -12,11 +12,11 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib" // Driver de PostgreSQL (se registra internamente)
 
 	"DeRabona/DataBase" // Repositorio de consultas generado por sqlc
-	"DeRabona/Handler"  // Repositorio donde se encuentran los Handlers
+	"DeRabona/Handler"  // Capa de Presentación (Handlers HTTP)
+	"DeRabona/Logic"    // Capa de Lógica de Negocio (Services)
 )
 
 func main() {
-
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
 		connStr = "postgres://postgres:tu_contraseña@localhost:5432/deRabona_db?sslmode=disable"
@@ -32,27 +32,43 @@ func main() {
 	defer cancel()
 
 	if err := db.PingContext(ctx); err != nil {
-		log.Fatalf("Ls base de datos no esta respodiendo: %v", err)
+		log.Fatalf("La base de datos no esta respondiendo: %v", err)
 	}
 	fmt.Println("Conexion a la base de datos exitosa.")
 
+	// 1. Instanciamos el repositorio de sqlc
 	repo := DataBase.New(db)
 
-	app := &Handler.APIHandler{Repo: repo}
+	// 2. Instanciamos los Services inyectándoles el repo
+	equipoService := &Logic.EquiposService{Repo: repo}
+	ligaService := &Logic.LigasService{Repo: repo}
+	partidoService := &Logic.PartidosService{Repo: repo}
+	tablaService := &Logic.TablaService{Repo: repo}
 
-	http.HandleFunc("/equipos", app.EquiposHandler)
-	http.HandleFunc("/equipos/", app.EquipoHandler)
+	// 3. Instanciamos los Handlers inyectándoles los services
+	equipoHandler := &Handler.EquiposHandler{Service: equipoService}
+	ligaHandler := &Handler.LigasHandler{Service: ligaService}
+	partidoHandler := &Handler.PartidosHandler{Service: partidoService}
+	tablaHandler := &Handler.TablaHandler{Service: tablaService}
 
-	http.HandleFunc("/ligas", app.LigasHandler)
-	http.HandleFunc("/ligas/", app.LigaHandler)
+	// 4. Enrutamiento HTTP oficial con los nuevos handlers
+	// Equipos
+	http.HandleFunc("/equipos", equipoHandler.HandleEquipos)
+	http.HandleFunc("/equipos/", equipoHandler.HandleEquipoByID)
 
-	http.HandleFunc("/partidos", app.PartidosHandler)
-	http.HandleFunc("/partidos/", app.PartidoHandler)
+	// Ligas
+	http.HandleFunc("/ligas", ligaHandler.HandleLigas)
+	http.HandleFunc("/ligas/", ligaHandler.HandleLigaByID)
 
-	http.HandleFunc("/tabla", app.TablasHandler)
-	http.HandleFunc("/tabla/", app.TablaLigaHandler)
-	http.HandleFunc("/tabla-equipo", app.TablaAccionHandler)
+	// Partidos
+	http.HandleFunc("/partidos", partidoHandler.HandlePartidos)
+	http.HandleFunc("/partidos/", partidoHandler.HandlePartidoByID)
 
+	// Tabla de Posiciones
+	http.HandleFunc("/tabla", tablaHandler.HandleTabla)
+	http.HandleFunc("/tabla/", tablaHandler.HandleTablaByLiga)
+
+	// 5. Servidor de archivos estáticos (Frontend)
 	staticDir := "./static"
 	fileServer := http.FileServer(http.Dir(staticDir))
 	http.Handle("/", fileServer)
