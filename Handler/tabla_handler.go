@@ -24,10 +24,7 @@ type UpdateTablaRequest struct {
 	PartidosPerdidos  int32 `json:"partidos_perdidos"`
 }
 
-// ------------------------------------------------------------------
 // RUTAS GENERALES: /tabla
-// ------------------------------------------------------------------
-
 func (app *APIHandler) TablasHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
@@ -66,10 +63,7 @@ func (app *APIHandler) createTabla(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(nuevaPosicion)
 }
 
-// ------------------------------------------------------------------
 // RUTA PARA LISTAR POSICIONES DE UNA LIGA: /tabla/{liga_id}
-// ------------------------------------------------------------------
-
 func (app *APIHandler) TablaLigaHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -101,10 +95,7 @@ func (app *APIHandler) TablaLigaHandler(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(posiciones)
 }
 
-// ------------------------------------------------------------------
 // RUTA PARA MODIFICAR O ELIMINAR: /tabla/equipo
-// ------------------------------------------------------------------
-
 func (app *APIHandler) TablaAccionHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPut:

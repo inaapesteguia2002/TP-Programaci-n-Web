@@ -27,10 +27,7 @@ type UpdatePartidoRequest struct {
 	Estado         string `json:"estado"`
 }
 
-// ------------------------------------------------------------------
 // RUTAS GENERALES: /partidos
-// ------------------------------------------------------------------
-
 func (app *APIHandler) PartidosHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -91,10 +88,7 @@ func (app *APIHandler) createPartido(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(nuevoPartido)
 }
 
-// ------------------------------------------------------------------
 // RUTAS ESPECÍFICAS POR ID: /partidos/{id}
-// ------------------------------------------------------------------
-
 func (app *APIHandler) PartidoHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {

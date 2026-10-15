@@ -15,10 +15,7 @@ type LigaRequest struct {
 	Pais   string `json:"pais"`
 }
 
-// ------------------------------------------------------------------
 // RUTAS GENERALES: /ligas
-// ------------------------------------------------------------------
-
 func (app *APIHandler) LigasHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -71,10 +68,7 @@ func (app *APIHandler) createLiga(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(nuevaLiga)
 }
 
-// ------------------------------------------------------------------
 // RUTAS ESPECÍFICAS POR ID: /ligas/{id}
-// ------------------------------------------------------------------
-
 func (app *APIHandler) LigaHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {

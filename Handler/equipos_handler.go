@@ -2,82 +2,59 @@ package Handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"DeRabona/DataBase"
+	"DeRabona/Logic"
 )
 
-// 1. Estructura principal que recibe el repositorio de sqlc
-type APIHandler struct {
-	Repo *DataBase.Queries
+// EquiposHandler se encarga de las peticiones HTTP e inyecta el Service
+type EquiposHandler struct {
+	Service *Logic.EquiposService
 }
 
-// DTO para validar las peticiones JSON entrantes
-type EquipoRequest struct {
-	Nombre string `json:"nombre"`
-}
-
-// ------------------------------------------------------------------
-// RUTAS GENERALES: /equipos
-// ------------------------------------------------------------------
-
-func (app *APIHandler) EquiposHandler(w http.ResponseWriter, r *http.Request) {
+// HandleEquipos maneja la colección entera: GET /equipos y POST /equipos
+func (h *EquiposHandler) HandleEquipos(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		app.getEquipos(w, r)
+		equipos, err := h.Service.ListEquipos(r.Context())
+		if err != nil {
+			http.Error(w, "Error al obtener los equipos", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(equipos)
+
 	case http.MethodPost:
-		app.createEquipo(w, r)
+		var req struct {
+			Nombre string `json:"nombre"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "JSON inválido", http.StatusBadRequest)
+			return
+		}
+
+		nuevoEquipo, err := h.Service.CreateEquipo(r.Context(), req.Nombre)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest) // Error de validación del Service
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated) // Estado 201: Creado
+		json.NewEncoder(w).Encode(nuevoEquipo)
+
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 	}
 }
 
-func (app *APIHandler) getEquipos(w http.ResponseWriter, r *http.Request) {
-	equipos, err := app.Repo.ListEquipos(r.Context())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(equipos)
-}
-
-func (app *APIHandler) createEquipo(w http.ResponseWriter, r *http.Request) {
-	var req EquipoRequest
-
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		http.Error(w, "JSON inválido", http.StatusBadRequest)
-		return
-	}
-
-	if strings.TrimSpace(req.Nombre) == "" {
-		http.Error(w, "El nombre del equipo no puede estar vacío", http.StatusBadRequest)
-		return
-	}
-
-	// sqlc pide un string directamente al haber un solo parámetro
-	nuevoEquipo, err := app.Repo.CreateEquipo(r.Context(), req.Nombre)
-	if err != nil {
-		fmt.Println("ERROR REAL AL CREAR EQUIPO:", err)
-		http.Error(w, "Error al guardar en la base de datos", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated) // 201 Created
-	json.NewEncoder(w).Encode(nuevoEquipo)
-}
-
-// ------------------------------------------------------------------
-// RUTAS ESPECÍFICAS POR ID: /equipos/{id}
-// ------------------------------------------------------------------
-
-func (app *APIHandler) EquipoHandler(w http.ResponseWriter, r *http.Request) {
+// HandleEquipoByID maneja recursos individuales: GET, PUT, DELETE en /equipos/{id}
+func (h *EquiposHandler) HandleEquipoByID(w http.ResponseWriter, r *http.Request) {
+	// Extraemos el ID de la URL (ej: /equipos/1)
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {
 		http.Error(w, "URL inválida", http.StatusBadRequest)
@@ -90,63 +67,51 @@ func (app *APIHandler) EquipoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Castear a int32 para que coincida con el SERIAL de Postgres
 	equipoID := int32(id)
 
 	switch r.Method {
 	case http.MethodGet:
-		app.getEquipo(w, r, equipoID)
+		equipo, err := h.Service.GetEquipo(r.Context(), equipoID)
+		if err != nil {
+			http.Error(w, "Equipo no encontrado", http.StatusNotFound) // Estado 404
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(equipo)
+
 	case http.MethodPut:
-		app.updateEquipo(w, r, equipoID)
+		var req struct {
+			Nombre string `json:"nombre"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "JSON inválido", http.StatusBadRequest)
+			return
+		}
+
+		arg := DataBase.UpdateEquipoParams{
+			ID:     equipoID,
+			Nombre: req.Nombre,
+		}
+
+		if err := h.Service.UpdateEquipo(r.Context(), arg); err != nil {
+			http.Error(w, "Error al actualizar o equipo no encontrado", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"mensaje": "Equipo actualizado con éxito"})
+
 	case http.MethodDelete:
-		app.deleteEquipo(w, r, equipoID)
+		if err := h.Service.DeleteEquipo(r.Context(), equipoID); err != nil {
+			http.Error(w, "Error al eliminar o equipo no encontrado", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent) // Estado 204: Sin contenido (Eliminación exitosa)
+
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 	}
-}
-
-func (app *APIHandler) getEquipo(w http.ResponseWriter, r *http.Request, id int32) {
-	equipo, err := app.Repo.GetEquipo(r.Context(), id)
-	if err != nil {
-		http.Error(w, "Equipo no encontrado", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(equipo)
-}
-
-func (app *APIHandler) deleteEquipo(w http.ResponseWriter, r *http.Request, id int32) {
-	err := app.Repo.DeleteEquipo(r.Context(), id)
-	if err != nil {
-		http.Error(w, "Error al eliminar el equipo", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent) // 204 No Content
-}
-
-func (app *APIHandler) updateEquipo(w http.ResponseWriter, r *http.Request, id int32) {
-	var req EquipoRequest
-
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		http.Error(w, "JSON inválido", http.StatusBadRequest)
-		return
-	}
-
-	// Construimos los parámetros requeridos por sqlc para el UPDATE
-	params := DataBase.UpdateEquipoParams{
-		ID:     id,
-		Nombre: req.Nombre,
-	}
-
-	err = app.Repo.UpdateEquipo(r.Context(), params)
-	if err != nil {
-		http.Error(w, "Error al actualizar", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(params)
 }
