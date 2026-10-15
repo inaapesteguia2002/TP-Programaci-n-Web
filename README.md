@@ -1,7 +1,7 @@
 # Trabajo Práctico 3: Desarrollo de API REST y Capa de Lógica
 
 ## Descripción del Proyecto
-Este proyecto implementa una **API REST completa en Go** utilizando una arquitectura modular con separación de responsabilidades estricta (Handler - Service - Repository). Se conecta a una base de datos PostgreSQL 16 mediante consultas seguras generadas con `sqlc` y un driver optimizado (`pgx/v5`). 
+Este proyecto implementa una **API REST completa en Go** utilizando una arquitectura modular con separación de responsabilidades estricta (Handler - Service - Repositorio). Se conecta a una base de datos PostgreSQL 16 mediante consultas seguras generadas con `sqlc` y un driver optimizado (`pgx/v5`). 
 El sistema gestiona las entidades principales del torneo: **Ligas, Equipos, Partidos y Tabla de Posiciones**.
 
 ## Componentes principales
@@ -15,11 +15,11 @@ El sistema gestiona las entidades principales del torneo: **Ligas, Equipos, Part
 - **Go**: versión 1.20 o superior
 - **Docker y Docker Compose**
 - **sqlc**
-- **Hurl** (herramienta para pruebas funcionales de los endpoints)
+- **Hurl** (es **obligatorio** tener instalado Hurl en el sistema para que el Makefile pueda ejecutar las pruebas funcionales de los endpoints mediante `requests.hurl`)
 
 ## Instrucciones de ejecución y testing
 
-El proyecto cuenta con un automatizador en el `Makefile` que realiza todas las tareas necesarias de forma transparente (limpieza previa, levantamiento de contenedores, espera activa de la base de datos, compilación, ejecución de tests y limpieza posterior).
+El proyecto cuenta con un automatizador en el `Makefile` que realiza todas las tareas necesarias de forma transparente (limpieza previa, levantamiento de contenedores por separado, espera activa de la base de datos, compilación, ejecución de tests y limpieza posterior).
 
 ### Pasos para probar el proyecto:
 
