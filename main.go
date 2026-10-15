@@ -12,7 +12,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib" // Driver de PostgreSQL (se registra internamente)
 
 	"DeRabona/DataBase" // Repositorio de consultas generado por sqlc
-	"DeRabona/Logic"    // Repositorio donde se encuentran los Handlers
+	"DeRabona/Handler"  // Repositorio donde se encuentran los Handlers
 )
 
 func main() {
@@ -38,7 +38,7 @@ func main() {
 
 	repo := DataBase.New(db)
 
-	app := &Logic.APIHandler{Repo: repo}
+	app := &Handler.APIHandler{Repo: repo}
 
 	http.HandleFunc("/equipos", app.EquiposHandler)
 	http.HandleFunc("/equipos/", app.EquipoHandler)

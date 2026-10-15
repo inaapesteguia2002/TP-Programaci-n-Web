@@ -1,4 +1,4 @@
-package Logic
+package Handler
 
 import (
 	"database/sql"
