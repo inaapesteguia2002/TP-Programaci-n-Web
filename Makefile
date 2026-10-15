@@ -22,8 +22,8 @@ test:
 	docker compose down -v
 
 test-api:
-	@echo "--- 1) Tareas previas ---"
 	# 1. Limpieza previa de contenedores y volúmenes huérfanos
+	@echo "--- 1) Tareas previas ---"
 	docker compose down -v --remove-orphans || true
 
 	# 2. Generación del código Go a partir de las consultas SQL con sqlc
@@ -42,10 +42,10 @@ test-api:
 	@echo "Dando unos segundos para que la API termine de conectarse..."
 	@sleep 3
 
-	@echo "--- 2) Prueba de los endpoints ---"
 	# 6. Ejecución de las pruebas funcionales de todos los endpoints utilizando Hurl
+	@echo "--- 2) Prueba de los endpoints ---"
 	hurl --test requests.hurl
 
-	@echo "--- 3) Tareas posteriores (Limpieza) ---"
 	# 7. Limpieza final de contenedores y volúmenes de Docker
+	@echo "--- 3) Tareas posteriores (Limpieza) ---"
 	docker compose down -v
