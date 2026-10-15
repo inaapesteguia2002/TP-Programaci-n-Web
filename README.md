@@ -33,7 +33,6 @@ Para evaluar este trabajo práctico, el proyecto cuenta con un script de automat
 - Go: version 1.20 o superior
 - Docker y Docker Compose
 - sqlc
-- Make instalado en el sistema
 - Hurl (para correr las pruebas)
 
 ## Pasos para probar el proyecto
