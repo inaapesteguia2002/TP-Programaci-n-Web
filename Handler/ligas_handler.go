@@ -7,69 +7,59 @@ import (
 	"strings"
 
 	"DeRabona/DataBase"
+	"DeRabona/Logic"
 )
 
-// DTO para validar las peticiones JSON entrantes de Ligas
-type LigaRequest struct {
-	Nombre string `json:"nombre"`
-	Pais   string `json:"pais"`
+// LigasHandler se encarga de las peticiones HTTP e inyecta el Service
+type LigasHandler struct {
+	Service *Logic.LigasService
 }
 
-// RUTAS GENERALES: /ligas
-func (app *APIHandler) LigasHandler(w http.ResponseWriter, r *http.Request) {
+// HandleLigas maneja GET /ligas y POST /ligas
+func (h *LigasHandler) HandleLigas(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		app.getLigas(w, r)
+		ligas, err := h.Service.ListLigas(r.Context())
+		if err != nil {
+			http.Error(w, "Error al obtener las ligas", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(ligas)
+
 	case http.MethodPost:
-		app.createLiga(w, r)
+		var req struct {
+			Nombre string `json:"nombre"`
+			Pais   string `json:"pais"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "JSON inválido", http.StatusBadRequest)
+			return
+		}
+
+		arg := DataBase.CreateLigaParams{
+			Nombre: req.Nombre,
+			Pais:   req.Pais,
+		}
+
+		nuevaLiga, err := h.Service.CreateLiga(r.Context(), arg)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest) // Cae acá si el Service tira error de validación
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated) // 201 Created
+		json.NewEncoder(w).Encode(nuevaLiga)
+
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 	}
 }
 
-func (app *APIHandler) getLigas(w http.ResponseWriter, r *http.Request) {
-	ligas, err := app.Repo.ListLigas(r.Context())
-	if err != nil {
-		http.Error(w, "Error al obtener ligas", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(ligas)
-}
-
-func (app *APIHandler) createLiga(w http.ResponseWriter, r *http.Request) {
-	var req LigaRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "JSON inválido", http.StatusBadRequest)
-		return
-	}
-
-	if strings.TrimSpace(req.Nombre) == "" || strings.TrimSpace(req.Pais) == "" {
-		http.Error(w, "El nombre y el país no pueden estar vacíos", http.StatusBadRequest)
-		return
-	}
-
-	// Mapeamos nuestro DTO a los parámetros requeridos por sqlc
-	params := DataBase.CreateLigaParams{
-		Nombre: req.Nombre,
-		Pais:   req.Pais,
-	}
-
-	nuevaLiga, err := app.Repo.CreateLiga(r.Context(), params)
-	if err != nil {
-		http.Error(w, "Error al guardar en la base de datos", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated) // 201 Created
-	json.NewEncoder(w).Encode(nuevaLiga)
-}
-
-// RUTAS ESPECÍFICAS POR ID: /ligas/{id}
-func (app *APIHandler) LigaHandler(w http.ResponseWriter, r *http.Request) {
+// HandleLigaByID maneja GET, PUT y DELETE en /ligas/{id}
+func (h *LigasHandler) HandleLigaByID(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {
 		http.Error(w, "URL inválida", http.StatusBadRequest)
@@ -82,63 +72,53 @@ func (app *APIHandler) LigaHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Castear a int32 para que coincida con el SERIAL de Postgres
 	ligaID := int32(id)
 
 	switch r.Method {
 	case http.MethodGet:
-		app.getLiga(w, r, ligaID)
+		liga, err := h.Service.GetLiga(r.Context(), ligaID)
+		if err != nil {
+			http.Error(w, "Liga no encontrada", http.StatusNotFound) // 404 Not Found
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(liga)
+
 	case http.MethodPut:
-		app.updateLiga(w, r, ligaID)
+		var req struct {
+			Nombre string `json:"nombre"`
+			Pais   string `json:"pais"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "JSON inválido", http.StatusBadRequest)
+			return
+		}
+
+		arg := DataBase.UpdateLigaParams{
+			ID:     ligaID,
+			Nombre: req.Nombre,
+			Pais:   req.Pais,
+		}
+
+		if err := h.Service.UpdateLiga(r.Context(), arg); err != nil {
+			http.Error(w, "Error al actualizar o liga no encontrada", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"mensaje": "Liga actualizada con éxito"})
+
 	case http.MethodDelete:
-		app.deleteLiga(w, r, ligaID)
+		if err := h.Service.DeleteLiga(r.Context(), ligaID); err != nil {
+			http.Error(w, "Error al eliminar o liga no encontrada", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent) // 204 No Content
+
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 	}
-}
-
-func (app *APIHandler) getLiga(w http.ResponseWriter, r *http.Request, id int32) {
-	liga, err := app.Repo.GetLiga(r.Context(), id)
-	if err != nil {
-		http.Error(w, "Liga no encontrada", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(liga)
-}
-
-func (app *APIHandler) deleteLiga(w http.ResponseWriter, r *http.Request, id int32) {
-	err := app.Repo.DeleteLiga(r.Context(), id)
-	if err != nil {
-		http.Error(w, "Error al eliminar la liga", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent) // 204 No Content
-}
-
-func (app *APIHandler) updateLiga(w http.ResponseWriter, r *http.Request, id int32) {
-	var req LigaRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "JSON inválido", http.StatusBadRequest)
-		return
-	}
-
-	// Construimos los parámetros requeridos por sqlc para el UPDATE
-	params := DataBase.UpdateLigaParams{
-		ID:     id,
-		Nombre: req.Nombre,
-		Pais:   req.Pais,
-	}
-
-	err := app.Repo.UpdateLiga(r.Context(), params)
-	if err != nil {
-		http.Error(w, "Error al actualizar", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(params)
 }

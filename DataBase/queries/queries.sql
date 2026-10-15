@@ -110,3 +110,10 @@ ORDER BY t.puntos DESC, e.nombre ASC;
 -- elimina un equipo de la tabla de posiciones de una liga en especifico
 DELETE FROM tabla_posiciones
 WHERE liga_id = $1 AND equipo_id = $2;
+
+-- name: GetTablaPorLiga :many
+SELECT e.nombre as equipo, t.puntos, t.partidos_jugados, t.partidos_ganados, t.partidos_empatados, t.partidos_perdidos
+FROM tabla_posiciones t
+JOIN equipos e ON t.equipo_id = e.id
+WHERE t.liga_id = $1
+ORDER BY t.puntos DESC, e.nombre ASC;
