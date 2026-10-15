@@ -36,7 +36,7 @@ func (s *PartidosService) GetPartido(ctx context.Context, id int32) (DataBase.Pa
 	return s.Repo.GetPartido(ctx, id)
 }
 
-// UpdatePartido actualiza los datos de un partido (solo goles y estado)
+// UpdatePartido actualiza los datos de un partido
 func (s *PartidosService) UpdatePartido(ctx context.Context, arg DataBase.UpdatePartidoParams) error {
 	if !arg.Estado.Valid || arg.Estado.String == "" {
 		arg.Estado = sql.NullString{String: "pendiente", Valid: true}
