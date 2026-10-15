@@ -24,6 +24,7 @@ test:
 test-api:
 	@echo "--- 1) Tareas previas ---"
 	# 1. Limpieza previa de contenedores y volúmenes huérfanos
+	docker rm -f postgres_container 2>/dev/null || true
 	docker compose down -v --remove-orphans || true
 
 	# 2. Generación del código Go a partir de las consultas SQL con sqlc
