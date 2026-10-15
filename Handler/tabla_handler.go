@@ -59,7 +59,6 @@ func (h *TablaHandler) HandleTabla(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Asignamos directamente los primitivos porque sqlc infiere el tipo por la operación matemática
 		arg := DataBase.UpdateTablaParams{
 			LigaID:            req.LigaID,
 			EquipoID:          req.EquipoID,
