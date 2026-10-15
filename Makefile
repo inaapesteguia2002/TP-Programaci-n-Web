@@ -40,7 +40,7 @@ test-api:
 	
 	# 5. Espera prudencial para que la API termine de inicializarse
 	@echo "Dando unos segundos para que la API termine de conectarse..."
-	@sleep 3
+	@sleep 10
 
 	# 6. Ejecución de las pruebas funcionales de todos los endpoints utilizando Hurl
 	@echo "--- 2) Prueba de los endpoints ---"
