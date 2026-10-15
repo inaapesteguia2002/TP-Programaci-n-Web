@@ -19,7 +19,6 @@ services:
       - "8080:8080"
     depends_on:
       - postgresql
-    restart: on-failure
     environment:
       - DATABASE_URL=postgres://postgres:tu_contraseña@postgres_container:5432/deRabona_db?sslmode=disable
 
