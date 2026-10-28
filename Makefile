@@ -52,7 +52,7 @@ test-api:
 
 	@echo "2) Prueba de los endpoints y 3) Limpieza Garantizada"
 	# 7. Ejecución de pruebas y 8. Limpieza final garantizada
-	@if hurl --test requests.hurl; then \
+	@if hurl --test --continue-on-error requests.hurl; then \
 		echo "TODAS LAS PRUEBAS PASARON. Limpiando contenedores"; \
 		docker compose down -v; \
 	else \
