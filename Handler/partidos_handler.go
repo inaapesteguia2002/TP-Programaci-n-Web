@@ -121,7 +121,12 @@ func (h *PartidosHandler) HandlePartidoByID(w http.ResponseWriter, r *http.Reque
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"mensaje": "Partido actualizado con éxito"})
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"id":              arg.ID,
+			"goles_local":     arg.GolesLocal.Int32,
+			"goles_visitante": arg.GolesVisitante.Int32,
+			"estado":          arg.Estado.String,
+		})
 
 	case http.MethodDelete:
 		if err := h.Service.DeletePartido(r.Context(), partidoID); err != nil {
