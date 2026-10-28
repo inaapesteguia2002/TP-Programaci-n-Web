@@ -22,7 +22,7 @@ test:
 	docker compose down -v
 
 test-api:
-	@echo "--- 1) Tareas previas ---"
+	@echo "1.Tareas previas"
 	# 1. Limpieza previa de contenedores y volúmenes huérfanos
 	docker rm -f postgres_container 2>/dev/null || true
 	docker compose down -v --remove-orphans || true
@@ -34,22 +34,29 @@ test-api:
 	docker compose up -d postgresql
 	
 	# 4. Espera activa hasta que PostgreSQL acepte conexiones reales
-	@echo "Esperando a que PostgreSQL acepte conexiones..."
+	@echo "Esperando a que PostgreSQL acepte conexiones"
 	@until docker exec postgres_container pg_isready -U postgres > /dev/null 2>&1; do \
 		sleep 1; \
 	done
 	
 	# 5. Ahora sí, levantamos la API sabiendo que la base está lista
-	@echo "Levantando la API de Go..."
+	@echo "Levantando la API de Go"
 	docker compose up -d --build api
 	
-	# 6. Pequeña espera para asegurar que el servidor HTTP esté escuchando
-	@sleep 10
+	# 6. Espera inteligente para asegurar que el servidor HTTP esté escuchando (Máx 30s)
+	@echo "Esperando a que la API de Go responda"
+	@for i in $$(seq 1 15); do \
+		if curl -s http://localhost:8080 > /dev/null; then echo "¡API conectada y lista!"; break; fi; \
+		sleep 2; \
+	done
 
-	@echo "--- 2) Prueba de los endpoints ---"
-	# 7. Ejecución de las pruebas funcionales de todos los endpoints utilizando Hurl
-	hurl --test requests.hurl
-
-	@echo "--- 3) Tareas posteriores (Limpieza) ---"
-	# 8. Limpieza final de contenedores y volúmenes de Docker
-	docker compose down -v
+	@echo "2) Prueba de los endpoints y 3) Limpieza Garantizada"
+	# 7. Ejecución de pruebas y 8. Limpieza final garantizada
+	@if hurl --test --continue-on-error requests.hurl; then \
+		echo "TODAS LAS PRUEBAS PASARON. Limpiando contenedores"; \
+		docker compose down -v; \
+	else \
+		echo "ALGUNAS PRUEBAS FALLARON. Limpiando contenedores de todas formas"; \
+		docker compose down -v; \
+		exit 1; \
+	fi

@@ -36,7 +36,7 @@ func (h *TablaHandler) HandleTabla(w http.ResponseWriter, r *http.Request) {
 
 		nuevaEntrada, err := h.Service.RegistrarEquipo(r.Context(), arg)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -69,13 +69,20 @@ func (h *TablaHandler) HandleTabla(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := h.Service.ActualizarEstadisticas(r.Context(), arg); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"mensaje": "Estadísticas sumadas con éxito"})
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"liga_id":            arg.LigaID,
+			"equipo_id":          arg.EquipoID,
+			"puntos":             arg.Puntos.Int32,
+			"partidos_ganados":   arg.PartidosGanados.Int32,
+			"partidos_empatados": arg.PartidosEmpatados.Int32,
+			"partidos_perdidos":  arg.PartidosPerdidos.Int32,
+		})
 
 	case http.MethodDelete:
 		var req struct {
