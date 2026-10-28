@@ -1,33 +1,39 @@
-# Trabajo Práctico 3: Desarrollo de API REST y Capa de Lógica
+# Trabajo Práctico 4: Desarrollo de Interfaz de Usuario y Consumo de API REST
 
 ## Descripción del Proyecto
-Este proyecto implementa una **API REST completa en Go** utilizando una arquitectura modular con separación de responsabilidades estricta (Handler - Service - Repositorio). Se conecta a una base de datos PostgreSQL 16 mediante consultas seguras generadas con `sqlc` y un driver optimizado (`pgx/v5`). 
-El sistema gestiona las entidades principales del torneo: **Ligas, Equipos, Partidos y Tabla de Posiciones**.
+Este proyecto extiende la arquitectura del sistema **"De Rabona"** incorporando una **interfaz de usuario web (Frontend)** completa. Se desarrolló un Panel de Administración interactivo utilizando HTML5, CSS3 moderno (CSS Grid/Flexbox) y Vanilla JavaScript. 
+La interfaz actúa como cliente de la API REST desarrollada en Go, consumiendo los endpoints (`/ligas`, `/equipos`, `/partidos`, `/tabla`) mediante peticiones `fetch` asíncronas. El sistema permite realizar operaciones CRUD completas, cargar selectores dinámicamente relacionando entidades por ID y actualizar el DOM en tiempo real sin recargar la página.
 
 ## Componentes principales
-- `main.go`: Configura la conexión a la base de datos con un timeout de 5 segundos, realiza la inyección de dependencias entre la capa de negocio (`Logic`), la de presentación (`Handler`) y el repositorio (`DataBase`), y levanta el servidor HTTP nativo (`net/http`) junto con archivos estáticos.
-- `Logic/`: Capa de lógica de negocio que contiene los servicios y reglas de validación de cada entidad de forma pura.
-- `Handler/`: Capa de presentación encargada de procesar las peticiones HTTP, parsear los JSON, validar códigos de estado y comunicarse con los servicios.
-- `DataBase/`: Modelos y código SQL generado automáticamente por `sqlc`.
-- `Makefile`: Automatización integral del ciclo de pruebas, contenedores, compilación y limpieza.
+- `static/index.html`: Estructura semántica del panel de administración (Dashboard), dividida en tarjetas modulares para cada entidad.
+- `static/styles.css`: Hojas de estilo responsivas que proveen una experiencia de usuario limpia, con efectos de estado y diseño adaptativo.
+- `static/app.js`: Lógica del lado del cliente. Implementa el manejo de eventos del DOM, delegación de eventos, peticiones HTTP (`GET`, `POST`, `DELETE`) y el renderizado dinámico de la interfaz.
+- `main.go`: Orquestador principal. Además de inyectar dependencias y conectarse a la base de datos, expone el servidor HTTP nativo (`net/http`) configurado para servir los archivos estáticos de la interfaz web.
+- `Handler/`, `Logic/`, `DataBase/`: Capas de presentación, negocio y persistencia del backend (PostgreSQL + `sqlc`), que procesan las peticiones originadas por la nueva interfaz.
 
 ## Requisitos Previos
 - **Go**: versión 1.20 o superior
-- **Docker y Docker Compose**
-- **sqlc**
-- **Hurl** (es **obligatorio** tener instalado Hurl en el sistema para que el Makefile pueda ejecutar las pruebas funcionales de los endpoints mediante `requests.hurl`)
+- **Docker y Docker Compose** (para levantar la base de datos PostgreSQL)
+- **Navegador Web Moderno** (Opera GX, Chrome, Edge, etc.) para visualizar la interfaz.
 
-## Instrucciones de ejecución y testing
-
-El proyecto cuenta con un automatizador en el `Makefile` que realiza todas las tareas necesarias de forma transparente (limpieza previa, levantamiento de contenedores por separado, espera activa de la base de datos, compilación, ejecución de tests y limpieza posterior).
-
-### Pasos para probar el proyecto:
+## Instrucciones de ejecución
+Para probar la interfaz y el funcionamiento integral del sistema, sigue estos pasos:
 
 1. **Clonar el repositorio** y abrir una terminal en el directorio raíz.
-2. **Posicionarse en la rama correspondiente a la entrega (`tp3`)**:
+2. **Posicionarse en la rama correspondiente a la entrega (`tp4`)**:
    ```bash
    git fetch origin
-   git checkout tp3
-3. **Correr los test**
-    ```bash
-    make test-api
+   git checkout tp4
+   ```
+3. **Levantar la base de datos PostgreSQL**:
+   ```bash
+   docker-compose up -d
+   ```
+4. **Ejecutar el servidor backend en Go**:
+   ```bash
+   go run main.go
+   ```
+5. **Acceder a la Interfaz de Usuario**:
+   - Abrir un navegador web.
+   - Ingresar a **`http://localhost:8080/`** (o el puerto configurado en el servidor).
+   - Desde el panel, podrás interactuar visualmente con las Ligas, Equipos, Partidos y la Tabla de Posiciones, reflejándose los cambios directamente en la base de datos.
