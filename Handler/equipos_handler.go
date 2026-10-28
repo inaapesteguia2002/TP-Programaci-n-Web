@@ -101,7 +101,10 @@ func (h *EquiposHandler) HandleEquipoByID(w http.ResponseWriter, r *http.Request
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"mensaje": "Equipo actualizado con éxito"})
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"id":     arg.ID,
+			"nombre": arg.Nombre,
+		})
 
 	case http.MethodDelete:
 		if err := h.Service.DeleteEquipo(r.Context(), equipoID); err != nil {
