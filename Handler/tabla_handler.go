@@ -36,7 +36,7 @@ func (h *TablaHandler) HandleTabla(w http.ResponseWriter, r *http.Request) {
 
 		nuevaEntrada, err := h.Service.RegistrarEquipo(r.Context(), arg)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -69,7 +69,7 @@ func (h *TablaHandler) HandleTabla(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := h.Service.ActualizarEstadisticas(r.Context(), arg); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
