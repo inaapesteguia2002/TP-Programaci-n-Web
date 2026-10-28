@@ -1,7 +1,7 @@
-/* Estilos generales de la página */
+/* ESTILOS GENERALES */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
     color: #333;
     margin: 0;
     padding: 20px;
@@ -9,99 +9,152 @@ body {
     justify-content: center;
 }
 
-main {
+.dashboard {
     width: 100%;
-    max-width: 600px;
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 1200px; /* Ancho máximo para que no se estire demasiado */
 }
 
-h1, h2 {
-    color: #2c3e50;
+h1 {
+    color: #1a252f;
     text-align: center;
+    margin-bottom: 5px;
 }
 
 p {
     text-align: center;
     color: #666;
-    margin-bottom: 25px;
-    font-size: 14px;
+    margin-bottom: 30px;
 }
 
-/* Contenedores de secciones */
-section {
-    margin-bottom: 25px;
+/* GRILLA DE SECCIONES (CSS GRID) */
+.sections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
 }
 
-/* Formulario */
-.form-container form {
+/* TARJETAS (CARDS) */
+.card {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-top: 4px solid #3498db; /* Un detalle de color en el borde superior */
+    display: flex;
+    flex-direction: column;
+}
+
+.card h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 10px;
+}
+
+/* FORMULARIOS */
+form {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    margin-bottom: 20px;
 }
 
-.form-container input {
-    padding: 12px;
+input, select {
+    padding: 10px 12px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 14px;
+    background-color: #fff;
+    transition: border-color 0.2s;
 }
 
-.form-container input:focus {
+input:focus, select:focus {
     outline: none;
     border-color: #3498db;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.2);
 }
 
-.form-container button {
-    background-color: #27ae60;
+/* Contenedor específico para los goles (alineados a la par) */
+.goles-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.goles-container input {
+    width: 100%;
+    text-align: center;
+}
+
+.goles-container span {
+    font-weight: bold;
+    color: #555;
+}
+
+/* BOTONES */
+button {
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background-color: #2ecc71;
     color: white;
     border: none;
     padding: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: background-color 0.2s;
-}
-
-.form-container button:hover {
-    background-color: #219653;
-}
-
-/* Lista de Partidos (Marcadores en Vivo) */
-.list-container ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.list-container li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f9f9f9;
-    padding: 12px 15px;
-    margin-bottom: 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 15px;
+    font-weight: bold;
 }
 
-/* Botón de eliminar dinámico */
+.btn-primary:hover {
+    background-color: #27ae60;
+}
+
 .btn-delete {
     background-color: #e74c3c;
     color: white;
     border: none;
-    padding: 6px 12px;
+    padding: 6px 10px;
     border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background-color 0.2s;
+    font-size: 12px;
+    font-weight: bold;
 }
 
 .btn-delete:hover {
     background-color: #c0392b;
+}
+
+/* LISTAS DINÁMICAS */
+.entity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1; /* Hace que la lista ocupe el espacio sobrante de la tarjeta */
+}
+
+.entity-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 12px 15px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.entity-list li strong {
+    color: #2c3e50;
 }

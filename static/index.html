@@ -1,19 +1,100 @@
+HTML
 <!DOCTYPE html>
-	<html>
-	<head>
-		<title>De Rabona</title>
-	</head>
-	<body>
-		<h1>De Rabona</h1>
-		<p>
-			Esta página permite seguir los resultados de partidos 
-            de fútbol en tiempo real, registrar nuevos partidos, 
-            actualizar los marcadores en vivo y 
-            consultar el historial de partidos terminados.
-		</p>
-	</body>
-	</html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De Rabona - Panel de Administración</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="dashboard">
+        <h1>De Rabona - Panel de Administración</h1>
+        <p>Gestión integral de Ligas, Equipos, Partidos y Tabla de Posiciones.</p>
 
+        <div class="sections-grid">
+            
+            <!-- 1. SECCIÓN DE LIGAS -->
+            <section class="card">
+                <h2>Ligas</h2>
+                <form id="form-liga">
+                    <input type="text" id="nombre-liga" placeholder="Nombre (ej. Liga Profesional)" required>
+                    <input type="text" id="pais-liga" placeholder="País (ej. Argentina)" required>
+                    <button type="submit" class="btn-primary">Guardar Liga</button>
+                </form>
+                <ul id="lista-ligas" class="entity-list"></ul>
+            </section>
 
+            <!-- 2. SECCIÓN DE EQUIPOS -->
+            <section class="card">
+                <h2>Equipos</h2>
+                <form id="form-equipo">
+                    <input type="text" id="nombre-equipo" placeholder="Nombre (ej. Sarmiento)" required>
+                    <button type="submit" class="btn-primary">Guardar Equipo</button>
+                </form>
+                <ul id="lista-equipos" class="entity-list"></ul>
+            </section>
 
+            <!-- 3. SECCIÓN DE PARTIDOS -->
+            <section class="card">
+                <h2>Partidos</h2>
+                <form id="form-partido">
+                    <select id="select-liga" required>
+                        <option value="">Seleccione una Liga...</option>
+                    </select>
+                    
+                    <select id="select-local" required>
+                        <option value="">Equipo Local...</option>
+                    </select>
+                    
+                    <select id="select-visitante" required>
+                        <option value="">Equipo Visitante...</option>
+                    </select>
+                    
+                    <div class="goles-container">
+                        <input type="number" id="goles-local" placeholder="Goles L." min="0" required>
+                        <span>-</span>
+                        <input type="number" id="goles-visitante" placeholder="Goles V." min="0" required>
+                    </div>
 
+                    <input type="text" id="estado-partido" placeholder="Estado (ej. Finalizado, Pendiente)" required>
+                    
+                    <button type="submit" class="btn-primary">Guardar Partido</button>
+                </form>
+                <ul id="lista-partidos" class="entity-list"></ul>
+            </section>
+
+            <!-- 4. SECCIÓN DE TABLA DE POSICIONES -->
+            <section class="card">
+                <h2>Tabla de Posiciones</h2>
+                
+                <!-- Formulario para inscribir un equipo en una liga (POST) -->
+                <form id="form-tabla">
+                    <select id="select-liga-tabla" required>
+                        <option value="">Seleccione Liga...</option>
+                    </select>
+                    <select id="select-equipo-tabla" required>
+                        <option value="">Seleccione Equipo...</option>
+                    </select>
+                    <button type="submit" class="btn-primary">Inscribir en Liga</button>
+                </form>
+
+                <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+
+                <!-- Selector para ver la tabla de una liga específica (GET) -->
+                <select id="select-ver-tabla">
+                    <option value="">Ver posiciones de la Liga...</option>
+                </select>
+                
+                <ul id="lista-tabla" class="entity-list">
+                    <li style="text-align: center; color: #888; font-size: 13px;">Selecciona una liga para ver la tabla.</li>
+                </ul>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Vinculación del script principal -->
+    <script src="app.js"></script>
+</body>
+</html>
