@@ -97,6 +97,16 @@ document.getElementById('form-equipo').addEventListener('submit', async (e) => {
     obtenerEquipos();
 });
 
+// Helper para extraer valores que pueden venir en mayúscula o como sql.NullInt32 / sql.NullString
+function extraerValor(campo, valorPorDefecto = 0) {
+    if (campo === undefined || campo === null) return valorPorDefecto;
+    if (typeof campo === 'object') {
+        if ('Int32' in campo) return campo.Valid ? campo.Int32 : valorPorDefecto;
+        if ('String' in campo) return campo.Valid ? campo.String : valorPorDefecto;
+    }
+    return campo;
+}
+
 // 3. PARTIDOS
 async function obtenerPartidos() {
     try {
@@ -109,9 +119,15 @@ async function obtenerPartidos() {
 
         partidos.forEach(p => {
             const id = p.id || p.ID;
+            const localId = p.equipo_local_id || p.EquipoLocalID;
+            const visitanteId = p.equipo_visitante_id || p.EquipoVisitanteID;
+            const golesLocal = extraerValor(p.goles_local ?? p.GolesLocal, 0);
+            const golesVisitante = extraerValor(p.goles_visitante ?? p.GolesVisitante, 0);
+            const estado = extraerValor(p.estado ?? p.Estado, 'Pendiente');
+
             const li = document.createElement('li');
             li.innerHTML = `
-                <span>Eq. ${p.equipo_local_id} <strong>(${p.goles_local} - ${p.goles_visitante})</strong> Eq. ${p.equipo_visitante_id} <br><small>${p.estado}</small></span>
+                <span>Eq. ${localId} <strong>(${golesLocal} - ${golesVisitante})</strong> Eq. ${visitanteId} <br><small>${estado}</small></span>
                 <button class="btn-delete" data-id="${id}" data-tipo="partido">Eliminar</button>
             `;
             listaPartidos.appendChild(li);
@@ -189,10 +205,17 @@ async function verTabla(ligaId) {
         }
 
         tabla.forEach(pos => {
+            const lId = pos.liga_id || pos.LigaID;
+            const eqId = pos.equipo_id || pos.EquipoID;
+            const pts = extraerValor(pos.puntos ?? pos.Puntos, 0);
+            const pg = extraerValor(pos.partidos_ganados ?? pos.PartidosGanados, 0);
+            const pe = extraerValor(pos.partidos_empatados ?? pos.PartidosEmpatados, 0);
+            const pp = extraerValor(pos.partidos_perdidos ?? pos.PartidosPerdidos, 0);
+
             const li = document.createElement('li');
             li.innerHTML = `
-                <span>Eq. ${pos.equipo_id} | <strong>Pts: ${pos.puntos || 0}</strong> | G:${pos.partidos_ganados||0} E:${pos.partidos_empatados||0} P:${pos.partidos_perdidos||0}</span>
-                <button class="btn-delete" data-ligaid="${pos.liga_id}" data-equipoid="${pos.equipo_id}" data-tipo="tabla">Sacar</button>
+                <span>Eq. ${eqId} | <strong>Pts: ${pts}</strong> | G:${pg} E:${pe} P:${pp}</span>
+                <button class="btn-delete" data-ligaid="${lId}" data-equipoid="${eqId}" data-tipo="tabla">Sacar</button>
             `;
             listaTabla.appendChild(li);
         });
