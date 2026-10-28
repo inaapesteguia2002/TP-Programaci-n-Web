@@ -35,5 +35,5 @@ Para probar la interfaz y el funcionamiento integral del sistema, sigue estos pa
    ```
 5. **Acceder a la Interfaz de Usuario**:
    - Abrir un navegador web.
-   - Ingresar a **`http://localhost:8080/`** (o el puerto configurado en el servidor).
+   - Ingresar a **`http://localhost:8080/`**
    - Desde el panel, podrás interactuar visualmente con las Ligas, Equipos, Partidos y la Tabla de Posiciones, reflejándose los cambios directamente en la base de datos.
