@@ -166,7 +166,7 @@ jsonpath "$.LigaID" == 1
 jsonpath "$.EquipoID" == 1
 
 # [PUT] Actualizar estadísticas en la tabla y comprobar objeto devuelto
-PUT http://localhost:8080/tabla-equipo
+PUT http://localhost:8080/tabla
 {
   "liga_id": 1,
   "equipo_id": 1,
@@ -187,6 +187,43 @@ GET http://localhost:8080/tabla/1
 HTTP 200
 [Asserts]
 jsonpath "$" count == 1
+
+
+# ==========================================
+# 5. ELIMINACIÓN (DELETE) Y COMPROBACIÓN 404
+# ==========================================
+
+# 1. Eliminar equipo de la tabla de posiciones
+DELETE http://localhost:8080/tabla
+{
+  "liga_id": 1,
+  "equipo_id": 1
+}
+HTTP 204
+
+# 2. Eliminar el partido 1
+DELETE http://localhost:8080/partidos/1
+HTTP 204
+
+# Comprobar que el partido ya no existe (404 Not Found)
+GET http://localhost:8080/partidos/1
+HTTP 404
+
+# 3. Eliminar la liga 1
+DELETE http://localhost:8080/ligas/1
+HTTP 204
+
+# Comprobar que la liga ya no existe (404 Not Found)
+GET http://localhost:8080/ligas/1
+HTTP 404
+
+# 4. Eliminar el equipo 1
+DELETE http://localhost:8080/equipos/1
+HTTP 204
+
+# Comprobar que el equipo ya no existe (404 Not Found)
+GET http://localhost:8080/equipos/1
+HTTP 404
 
 
 # ==========================================
