@@ -1,39 +1,39 @@
-# Trabajo Práctico 4: Desarrollo de Interfaz de Usuario y Consumo de API REST
+# Trabajo Práctico N° 5: Migración a Server-Side Rendering con Templ y HTMX
 
 ## Descripción del Proyecto
-Este proyecto extiende la arquitectura del sistema **"De Rabona"** incorporando una **interfaz de usuario web (Frontend)** completa. Se desarrolló un Panel de Administración interactivo utilizando HTML5, CSS3 moderno (CSS Grid/Flexbox) y Vanilla JavaScript. 
-La interfaz actúa como cliente de la API REST desarrollada en Go, consumiendo los endpoints (`/ligas`, `/equipos`, `/partidos`, `/tabla`) mediante peticiones `fetch` asíncronas. El sistema permite realizar operaciones CRUD completas, cargar selectores dinámicamente relacionando entidades por ID y actualizar el DOM en tiempo real sin recargar la página.
+Este proyecto evoluciona el sistema **"De Rabona"** migrando su arquitectura desde una API REST con cliente separado hacia un enfoque robusto de **Server-Side Rendering (SSR)**. Se utilizaron componentes tipados en Go mediante **`templ`** y **HTMX** para manejar la interactividad dinámica y asíncrona en el cliente.
+El sistema cumple estrictamente con la restricción de **cero archivos de JavaScript (`.js`)**, delegando la generación del DOM y las actualizaciones parciales directamente en el servidor. Mantiene la persistencia robusta utilizando PostgreSQL, consultas tipadas con **`sqlc`** y una organización en capas (`Handler`, `Logic`, `DataBase`).
 
 ## Componentes principales
-- `static/index.html`: Estructura semántica del panel de administración (Dashboard), dividida en tarjetas modulares para cada entidad.
-- `static/styles.css`: Hojas de estilo responsivas que proveen una experiencia de usuario limpia, con efectos de estado y diseño adaptativo.
-- `static/app.js`: Lógica del lado del cliente. Implementa el manejo de eventos del DOM, delegación de eventos, peticiones HTTP (`GET`, `POST`, `DELETE`) y el renderizado dinámico de la interfaz.
-- `main.go`: Orquestador principal. Además de inyectar dependencias y conectarse a la base de datos, expone el servidor HTTP nativo (`net/http`) configurado para servir los archivos estáticos de la interfaz web.
-- `Handler/`, `Logic/`, `DataBase/`: Capas de presentación, negocio y persistencia del backend (PostgreSQL + `sqlc`), que procesan las peticiones originadas por la nueva interfaz.
+- `views/`: Contiene los componentes `.templ` que estructuran visualmente las Ligas, Equipos, Partidos y la Tabla de Posiciones, compilados nativamente a Go.
+- `Handler/`: Capa de presentación HTTP que maneja peticiones clásicas y parciales mediante headers de HTMX (`HX-Request`), aplicando el patrón Post/Redirect/Get (PRG) cuando corresponde.
+- `Logic/`: Capa de lógica de negocio y servicios que procesan las reglas del sistema de fútbol.
+- `DataBase/`: Repositorios de datos generados automáticamente por `sqlc` a partir de esquemas SQL y PostgreSQL.
+- `static/`: Directorio exclusivo para hojas de estilo y recursos visuales estáticos (sin lógica de scripts).
+- `main.go`: Orquestador principal, encargado de la conexión a la base de datos, inyección de dependencias, configuración del enrutamiento HTTP y el servidor de archivos estáticos.
 
 ## Requisitos Previos
 - **Go**: versión 1.20 o superior
 - **Docker y Docker Compose** (para levantar la base de datos PostgreSQL)
 - **Navegador Web Moderno** (Opera GX, Chrome, Edge, etc.) para visualizar la interfaz.
+- **Herramientas CLI**: `templ` y `sqlc` instaladas en el entorno
+- **Make**
 
 ## Instrucciones de ejecución
 Para probar la interfaz y el funcionamiento integral del sistema, sigue estos pasos:
 
 1. **Clonar el repositorio** y abrir una terminal en el directorio raíz.
-2. **Posicionarse en la rama correspondiente a la entrega (`tp4`)**:
+2. **Posicionarse en la rama correspondiente a la entrega (`tp5`)**:
    ```bash
    git fetch origin
-   git checkout tp4
+   git checkout tp5
    ```
-3. **Levantar la base de datos PostgreSQL**:
+3. **Ejecutar el sistema mediante el Makefile**:
+   Este comando realiza automáticamente la limpieza de contenedores previos, levanta la base de datos, espera a que esté activa, ejecuta sqlc, compila los componentes de templ y levanta el servidor Go:
    ```bash
-   docker-compose up -d
+   make run-app
    ```
-4. **Ejecutar el servidor backend en Go**:
-   ```bash
-   go run main.go
-   ```
-5. **Acceder a la Interfaz de Usuario**:
+4. **Acceder a la Interfaz de Usuario**:
    - Abrir un navegador web.
    - Ingresar a **`http://localhost:8080/`**
    - Desde el panel, podrás interactuar visualmente con las Ligas, Equipos, Partidos y la Tabla de Posiciones, reflejándose los cambios directamente en la base de datos.

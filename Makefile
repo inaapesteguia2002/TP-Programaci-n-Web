@@ -1,4 +1,4 @@
-.PHONY: test test-api
+.PHONY: test test-api run-app
 
 test:
 	# 1. Limpieza de contenedores y volúmenes
@@ -6,6 +6,7 @@ test:
 
 	# 2. Generación de código Go con sqlc
 	sqlc generate
+	templ generate
 
 	# 3. Levantado contenedor de PostgreSQL
 	docker compose up -d postgresql
@@ -29,6 +30,7 @@ test-api:
 
 	# 2. Generación del código Go a partir de las consultas SQL con sqlc
 	sqlc generate
+	templ generate
 	
 	# 3. Levantamiento EXCLUSIVO de la base de datos primero
 	docker compose up -d postgresql
@@ -60,3 +62,20 @@ test-api:
 		docker compose down -v; \
 		exit 1; \
 	fi
+
+run-app:
+	# 1. Tareas previas: limpieza y generación de código (sqlc + templ)
+	docker compose down -v --remove-orphans || true
+	sqlc generate
+	templ generate
+
+	# 2. Levantar la base de datos y esperar a que esté lista
+	docker compose up -d postgresql
+	@echo "Esperando a que PostgreSQL acepte conexiones..."
+	@until docker exec postgres_container pg_isready -U postgres > /dev/null 2>&1; do \
+		sleep 1; \
+	done
+
+	# 3. Ejecutar la aplicación en local (o levantar por docker según prefieras)
+	@echo "Arrancando la aplicación en http://localhost:8080"
+	go run main.go
