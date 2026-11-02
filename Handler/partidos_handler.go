@@ -2,139 +2,96 @@ package Handler
 
 import (
 	"database/sql"
-	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"DeRabona/DataBase"
 	"DeRabona/Logic"
+	"DeRabona/views"
 )
 
-// PartidosHandler se encarga de las peticiones HTTP e inyecta el Service
 type PartidosHandler struct {
-	Service *Logic.PartidosService
+	PartidoService *Logic.PartidosService
+	LigaService    *Logic.LigasService
+	EquipoService  *Logic.EquiposService
 }
 
-// HandlePartidos maneja GET /partidos y POST /partidos
 func (h *PartidosHandler) HandlePartidos(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	switch r.Method {
 	case http.MethodGet:
-		partidos, err := h.Service.ListPartidos(r.Context())
+		partidos, err := h.PartidoService.ListPartidos(ctx)
 		if err != nil {
-			http.Error(w, "Error al obtener los partidos", http.StatusInternalServerError)
+			http.Error(w, "Error al listar partidos", http.StatusInternalServerError)
 			return
 		}
+		ligas, _ := h.LigaService.ListLigas(ctx)
+		equipos, _ := h.EquipoService.ListEquipos(ctx)
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(partidos)
+		views.IndexPartidos(partidos, ligas, equipos).Render(ctx, w)
 
 	case http.MethodPost:
-		var req struct {
-			LigaID            int32  `json:"liga_id"`
-			EquipoLocalID     int32  `json:"equipo_local_id"`
-			EquipoVisitanteID int32  `json:"equipo_visitante_id"`
-			GolesLocal        int32  `json:"goles_local"`
-			GolesVisitante    int32  `json:"goles_visitante"`
-			Estado            string `json:"estado"`
-		}
-
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "JSON inválido", http.StatusBadRequest)
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Formulario inválido", http.StatusBadRequest)
 			return
 		}
 
+		ligaID, _ := strconv.Atoi(r.FormValue("liga_id"))
+		localID, _ := strconv.Atoi(r.FormValue("equipo_local_id"))
+		visitanteID, _ := strconv.Atoi(r.FormValue("equipo_visitante_id"))
+		golesLocal, _ := strconv.Atoi(r.FormValue("goles_local"))
+		golesVisitante, _ := strconv.Atoi(r.FormValue("goles_visitante"))
+		estado := r.FormValue("estado")
+
 		arg := DataBase.CreatePartidoParams{
-			LigaID:            req.LigaID,
-			EquipoLocalID:     req.EquipoLocalID,
-			EquipoVisitanteID: req.EquipoVisitanteID,
-			GolesLocal:        sql.NullInt32{Int32: req.GolesLocal, Valid: true},
-			GolesVisitante:    sql.NullInt32{Int32: req.GolesVisitante, Valid: true},
-			Estado:            sql.NullString{String: req.Estado, Valid: req.Estado != ""},
+			LigaID:            int32(ligaID),
+			EquipoLocalID:     int32(localID),
+			EquipoVisitanteID: int32(visitanteID),
+			GolesLocal:        sql.NullInt32{Int32: int32(golesLocal), Valid: true},
+			GolesVisitante:    sql.NullInt32{Int32: int32(golesVisitante), Valid: true},
+			Estado:            sql.NullString{String: estado, Valid: estado != ""},
 		}
 
-		nuevoPartido, err := h.Service.CreatePartido(r.Context(), arg)
+		_, err := h.PartidoService.CreatePartido(ctx, arg)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated) // 201 Created
-		json.NewEncoder(w).Encode(nuevoPartido)
-
-	default:
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
-	}
-}
-
-// HandlePartidoByID maneja GET, PUT y DELETE en /partidos/{id}
-func (h *PartidosHandler) HandlePartidoByID(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) != 3 {
-		http.Error(w, "URL inválida", http.StatusBadRequest)
-		return
-	}
-
-	id, err := strconv.Atoi(parts[2])
-	if err != nil {
-		http.Error(w, "El ID debe ser numérico", http.StatusBadRequest)
-		return
-	}
-
-	partidoID := int32(id)
-
-	switch r.Method {
-	case http.MethodGet:
-		partido, err := h.Service.GetPartido(r.Context(), partidoID)
+		partidos, err := h.PartidoService.ListPartidos(ctx)
 		if err != nil {
-			http.Error(w, "Partido no encontrado", http.StatusNotFound)
+			http.Error(w, "Error al listar partidos", http.StatusInternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(partido)
-
-	case http.MethodPut:
-		var req struct {
-			GolesLocal     int32  `json:"goles_local"`
-			GolesVisitante int32  `json:"goles_visitante"`
-			Estado         string `json:"estado"`
-		}
-
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "JSON inválido", http.StatusBadRequest)
+		if r.Header.Get("HX-Request") == "true" {
+			views.PartidoList(partidos).Render(ctx, w)
 			return
 		}
 
-		arg := DataBase.UpdatePartidoParams{
-			ID:             partidoID,
-			GolesLocal:     sql.NullInt32{Int32: req.GolesLocal, Valid: true},
-			GolesVisitante: sql.NullInt32{Int32: req.GolesVisitante, Valid: true},
-			Estado:         sql.NullString{String: req.Estado, Valid: req.Estado != ""},
-		}
-
-		if err := h.Service.UpdatePartido(r.Context(), arg); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"id":              arg.ID,
-			"goles_local":     arg.GolesLocal.Int32,
-			"goles_visitante": arg.GolesVisitante.Int32,
-			"estado":          arg.Estado.String,
-		})
+		http.Redirect(w, r, "/partidos", http.StatusSeeOther)
 
 	case http.MethodDelete:
-		if err := h.Service.DeletePartido(r.Context(), partidoID); err != nil {
-			http.Error(w, "Error al eliminar o partido no encontrado", http.StatusInternalServerError)
+		parts := strings.Split(r.URL.Path, "/")
+		if len(parts) != 3 {
+			http.Error(w, "URL inválida", http.StatusBadRequest)
+			return
+		}
+		id, err := strconv.Atoi(parts[2])
+		if err != nil {
+			http.Error(w, "ID inválido", http.StatusBadRequest)
 			return
 		}
 
-		w.WriteHeader(http.StatusNoContent) // 204 No Content
+		err = h.PartidoService.DeletePartido(ctx, int32(id))
+		if err != nil {
+			http.Error(w, "Error al eliminar partido", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
 
 	default:
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)

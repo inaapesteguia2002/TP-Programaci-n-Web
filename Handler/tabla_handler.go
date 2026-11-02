@@ -1,141 +1,80 @@
 package Handler
 
 import (
-	"database/sql"
-	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"DeRabona/DataBase"
 	"DeRabona/Logic"
+	"DeRabona/views"
 )
 
-// TablaHandler se encarga de las peticiones HTTP e inyecta el Service
 type TablaHandler struct {
-	Service *Logic.TablaService
+	TablaService  *Logic.TablaService
+	LigaService   *Logic.LigasService
+	EquipoService *Logic.EquiposService
 }
 
-// HandleTabla maneja POST, PUT y DELETE en /tabla
 func (h *TablaHandler) HandleTabla(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	switch r.Method {
-	case http.MethodPost:
-		var req struct {
-			LigaID   int32 `json:"liga_id"`
-			EquipoID int32 `json:"equipo_id"`
+	case http.MethodGet:
+		// Lee el parámetro ?liga_id= de la URL (por defecto 1 si no viene especificado)
+		ligaIDStr := r.URL.Query().Get("liga_id")
+		var ligaID int32 = 1
+		if ligaIDStr != "" {
+			parsed, err := strconv.Atoi(ligaIDStr)
+			if err == nil {
+				ligaID = int32(parsed)
+			}
 		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "JSON inválido", http.StatusBadRequest)
+
+		filas, err := h.TablaService.ObtenerTabla(ctx, ligaID)
+		if err != nil {
+			http.Error(w, "Error al obtener la tabla de posiciones", http.StatusInternalServerError)
 			return
 		}
 
-		arg := DataBase.CreateTablaParams{
-			LigaID:   req.LigaID,
-			EquipoID: req.EquipoID,
+		ligas, _ := h.LigaService.ListLigas(ctx)
+		equipos, _ := h.EquipoService.ListEquipos(ctx)
+
+		views.IndexTabla(ligaID, filas, ligas, equipos).Render(ctx, w)
+
+	case http.MethodPost:
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Formulario inválido", http.StatusBadRequest)
+			return
 		}
 
-		nuevaEntrada, err := h.Service.RegistrarEquipo(r.Context(), arg)
+		ligaID, _ := strconv.Atoi(r.FormValue("liga_id"))
+		equipoID, _ := strconv.Atoi(r.FormValue("equipo_id"))
+
+		arg := DataBase.CreateTablaParams{
+			LigaID:   int32(ligaID),
+			EquipoID: int32(equipoID),
+		}
+
+		_, err := h.TablaService.RegistrarEquipo(ctx, arg)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated) // 201 Created
-		json.NewEncoder(w).Encode(nuevaEntrada)
-
-	case http.MethodPut:
-		var req struct {
-			LigaID            int32 `json:"liga_id"`
-			EquipoID          int32 `json:"equipo_id"`
-			Puntos            int32 `json:"puntos"`
-			PartidosGanados   int32 `json:"partidos_ganados"`
-			PartidosEmpatados int32 `json:"partidos_empatados"`
-			PartidosPerdidos  int32 `json:"partidos_perdidos"`
-		}
-
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "JSON inválido", http.StatusBadRequest)
+		filas, err := h.TablaService.ObtenerTabla(ctx, int32(ligaID))
+		if err != nil {
+			http.Error(w, "Error al actualizar la tabla", http.StatusInternalServerError)
 			return
 		}
 
-		arg := DataBase.UpdateTablaParams{
-			LigaID:            req.LigaID,
-			EquipoID:          req.EquipoID,
-			Puntos:            sql.NullInt32{Int32: req.Puntos, Valid: true},
-			PartidosGanados:   sql.NullInt32{Int32: req.PartidosGanados, Valid: true},
-			PartidosEmpatados: sql.NullInt32{Int32: req.PartidosEmpatados, Valid: true},
-			PartidosPerdidos:  sql.NullInt32{Int32: req.PartidosPerdidos, Valid: true},
-		}
-
-		if err := h.Service.ActualizarEstadisticas(r.Context(), arg); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		if r.Header.Get("HX-Request") == "true" {
+			views.TablaList(filas).Render(ctx, w)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"liga_id":            arg.LigaID,
-			"equipo_id":          arg.EquipoID,
-			"puntos":             arg.Puntos.Int32,
-			"partidos_ganados":   arg.PartidosGanados.Int32,
-			"partidos_empatados": arg.PartidosEmpatados.Int32,
-			"partidos_perdidos":  arg.PartidosPerdidos.Int32,
-		})
-
-	case http.MethodDelete:
-		var req struct {
-			LigaID   int32 `json:"liga_id"`
-			EquipoID int32 `json:"equipo_id"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "JSON inválido", http.StatusBadRequest)
-			return
-		}
-
-		arg := DataBase.DeleteEquipoDeTablaParams{
-			LigaID:   req.LigaID,
-			EquipoID: req.EquipoID,
-		}
-
-		if err := h.Service.RemoverEquipo(r.Context(), arg); err != nil {
-			http.Error(w, "Error al eliminar el equipo de la tabla", http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent) // 204 No Content
+		http.Redirect(w, r, "/tabla?liga_id="+strconv.Itoa(ligaID), http.StatusSeeOther)
 
 	default:
 		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 	}
-}
-
-// HandleTablaByLiga maneja el GET en /tabla/{liga_id}
-func (h *TablaHandler) HandleTablaByLiga(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) != 3 {
-		http.Error(w, "URL inválida", http.StatusBadRequest)
-		return
-	}
-
-	ligaID, err := strconv.Atoi(parts[2])
-	if err != nil {
-		http.Error(w, "El ID de la liga debe ser numérico", http.StatusBadRequest)
-		return
-	}
-
-	tabla, err := h.Service.ObtenerTabla(r.Context(), int32(ligaID))
-	if err != nil {
-		http.Error(w, "Error al obtener la tabla de posiciones", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tabla)
 }
