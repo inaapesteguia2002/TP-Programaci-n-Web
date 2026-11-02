@@ -1,4 +1,4 @@
-tabla.templ: package views
+package views
 
 import (
 	"DeRabona/DataBase"
@@ -18,7 +18,7 @@ templ IndexTabla(ligaActualID int32, filas []DataBase.GetTablaPorLigaRow, ligas 
 					<div class="grid">
 						<select name="liga_id" required>
 							for _, l := range ligas {
-								<option value={ fmt.Sprint(l.ID) } selected?={ l.ID == ligaActualID }>
+								<option value={ fmt.Sprint(l.ID) } selected={ l.ID == ligaActualID }>
 									{ l.Nombre } ({ l.Pais })
 								</option>
 							}
