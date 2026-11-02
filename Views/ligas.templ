@@ -1,0 +1,85 @@
+package views
+
+import (
+	"DeRabona/DataBase"
+	"fmt"
+)
+
+// IndexLigas renderiza la vista principal de Ligas
+templ IndexLigas(ligas []DataBase.Liga) {
+	@Layout("Gestión de Ligas") {
+		<section>
+			<h2>Gestión de Ligas</h2>
+			@LigaForm()
+			<hr/>
+			<div id="contenedor-tabla-ligas">
+				@LigaList(ligas)
+			</div>
+		</section>
+	}
+}
+
+// LigaForm renderiza el formulario para crear una liga (INSERT INTO ligas (nombre, pais))
+templ LigaForm() {
+	<article>
+		<header><strong>Nueva Liga</strong></header>
+		<form
+			action="/ligas"
+			method="POST"
+			hx-post="/ligas"
+			hx-target="#contenedor-tabla-ligas"
+			hx-swap="innerHTML"
+			hx-on:htmx:after:swap="this.reset()"
+		>
+			<div class="grid">
+				<input type="text" name="nombre" placeholder="Nombre de la Liga (ej. Liga Profesional)" required/>
+				<input type="text" name="pais" placeholder="País (ej. Argentina)" required/>
+				<button type="submit">Agregar Liga</button>
+			</div>
+		</form>
+	</article>
+}
+
+// LigaList renderiza la tabla con todas las ligas
+templ LigaList(ligas []DataBase.Liga) {
+	<table class="striped">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Nombre</th>
+				<th>País</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, liga := range ligas {
+				@LigaRow(liga)
+			}
+			if len(ligas) == 0 {
+				<tr>
+					<td colspan="4" style="text-align: center;">No hay ligas registradas.</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+// LigaRow renderiza una fila individual y el botón de borrado con HTMX
+templ LigaRow(liga DataBase.Liga) {
+	<tr>
+		<td>{ fmt.Sprint(liga.ID) }</td>
+		<td>{ liga.Nombre }</td>
+		<td>{ liga.Pais }</td>
+		<td>
+			<button
+				class="secondary outline"
+				hx-delete={ fmt.Sprintf("/ligas/%d", liga.ID) }
+				hx-target="closest tr"
+				hx-swap="outerHTML"
+				hx-confirm="¿Estás seguro de eliminar esta liga?"
+			>
+				Borrar
+			</button>
+		</td>
+	</tr>
+}

@@ -1,0 +1,120 @@
+package views
+
+import (
+	"DeRabona/DataBase"
+	"fmt"
+)
+
+// IndexPartidos recibe los partidos a listar, más las ligas y equipos para poblar los <select> del formulario
+templ IndexPartidos(partidos []DataBase.Partido, ligas []DataBase.Liga, equipos []DataBase.Equipo) {
+	@Layout("Gestión de Partidos") {
+		<section>
+			<h2>Gestión de Partidos</h2>
+			@PartidoForm(ligas, equipos)
+			<hr/>
+			<div id="contenedor-tabla-partidos">
+				@PartidoList(partidos)
+			</div>
+		</section>
+	}
+}
+
+// PartidoForm permite registrar un partido seleccionando Liga, Local y Visitante
+templ PartidoForm(ligas []DataBase.Liga, equipos []DataBase.Equipo) {
+	<article>
+		<header><strong>Registrar Nuevo Partido</strong></header>
+		<form
+			action="/partidos"
+			method="POST"
+			hx-post="/partidos"
+			hx-target="#contenedor-tabla-partidos"
+			hx-swap="innerHTML"
+			hx-on:htmx:after:swap="this.reset()"
+		>
+			<div class="grid">
+				<select name="liga_id" required>
+					<option value="" disabled selected>Seleccione Liga...</option>
+					for _, l := range ligas {
+						<option value={ fmt.Sprint(l.ID) }>{ l.Nombre } ({ l.Pais })</option>
+					}
+				</select>
+
+				<select name="equipo_local_id" required>
+					<option value="" disabled selected>Equipo Local...</option>
+					for _, eq := range equipos {
+						<option value={ fmt.Sprint(eq.ID) }>{ eq.Nombre }</option>
+					}
+				</select>
+
+				<select name="equipo_visitante_id" required>
+					<option value="" disabled selected>Equipo Visitante...</option>
+					for _, eq := range equipos {
+						<option value={ fmt.Sprint(eq.ID) }>{ eq.Nombre }</option>
+					}
+				</select>
+			</div>
+
+			<div class="grid">
+				<input type="number" name="goles_local" min="0" value="0" placeholder="Goles Local" required/>
+				<input type="number" name="goles_visitante" min="0" value="0" placeholder="Goles Visitante" required/>
+				<select name="estado" required>
+					<option value="pendiente">Pendiente</option>
+					<option value="en_juego">En Juego</option>
+					<option value="finalizado">Finalizado</option>
+				</select>
+			</div>
+
+			<button type="submit">Guardar Partido</button>
+		</form>
+	</article>
+}
+
+// PartidoList renderiza la tabla de partidos
+templ PartidoList(partidos []DataBase.Partido) {
+	<table class="striped">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Liga ID</th>
+				<th>Local (ID)</th>
+				<th>Marcador</th>
+				<th>Visitante (ID)</th>
+				<th>Estado</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, p := range partidos {
+				@PartidoRow(p)
+			}
+			if len(partidos) == 0 {
+				<tr>
+					<td colspan="7" style="text-align: center;">No hay partidos registrados.</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+// PartidoRow renderiza cada partido y permite borrarlo con DELETE /partidos/{id}
+templ PartidoRow(p DataBase.Partido) {
+	<tr>
+		<td>{ fmt.Sprint(p.ID) }</td>
+		<td>{ fmt.Sprint(p.LigaID) }</td>
+		<td>Equipo #{ fmt.Sprint(p.EquipoLocalID) }</td>
+		<td><strong>{ fmt.Sprint(p.GolesLocal.Int32) } - { fmt.Sprint(p.GolesVisitante.Int32) }</strong></td>
+		<td>Equipo #{ fmt.Sprint(p.EquipoVisitanteID) }</td>
+		<td>{ p.Estado.String }</td>
+		<td>
+			<button
+				class="secondary outline"
+				hx-delete={ fmt.Sprintf("/partidos/%d", p.ID) }
+				hx-target="closest tr"
+				hx-swap="outerHTML"
+				hx-confirm="¿Estás seguro de eliminar este partido?"
+			>
+				Borrar
+			</button>
+		</td>
+	</tr>
+}
