@@ -1,0 +1,122 @@
+package views
+
+import (
+	"fmt"
+	"DeRabona/DataBase"
+)
+
+// 1. Lista de Ligas
+templ LigaList(ligas []DataBase.Liga) {
+	if len(ligas) == 0 {
+		<p><small>No hay ligas registradas.</small></p>
+	} else {
+		<table>
+			<tbody>
+				for _, l := range ligas {
+					<tr>
+						<td><strong>{ l.Nombre }</strong> ({ l.Pais })</td>
+						<td style="text-align: right;">
+							<form action="/ligas/eliminar" method="POST" style="margin:0;">
+								<input type="hidden" name="id" value={ fmt.Sprintf("%d", l.ID) }/>
+								<button type="submit" class="secondary outline" style="padding: 4px 8px; font-size: 0.75rem;">Eliminar</button>
+							</form>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+}
+
+// 2. Lista de Equipos
+templ EquipoList(equipos []DataBase.Equipo) {
+	if len(equipos) == 0 {
+		<p><small>No hay equipos registrados.</small></p>
+	} else {
+		<table>
+			<tbody>
+				for _, eq := range equipos {
+					<tr>
+						<td>{ eq.Nombre } <small>(ID: { fmt.Sprintf("%d", eq.ID) })</small></td>
+						<td style="text-align: right;">
+							<form action="/equipos/eliminar" method="POST" style="margin:0;">
+								<input type="hidden" name="id" value={ fmt.Sprintf("%d", eq.ID) }/>
+								<button type="submit" class="secondary outline" style="padding: 4px 8px; font-size: 0.75rem;">Eliminar</button>
+							</form>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+}
+
+// 3. Lista de Partidos
+templ PartidoList(partidos []DataBase.Partido) {
+	if len(partidos) == 0 {
+		<p><small>No hay partidos registrados.</small></p>
+	} else {
+		<table>
+			<tbody>
+				for _, p := range partidos {
+					<tr>
+						<td>
+							Eq. { fmt.Sprintf("%d", p.EquipoLocalID) }
+							<strong>({ fmt.Sprintf("%d", p.GolesLocal.Int32) } - { fmt.Sprintf("%d", p.GolesVisitante.Int32) })</strong>
+							Eq. { fmt.Sprintf("%d", p.EquipoVisitanteID) }
+							<br/>
+							<small>{ p.Estado.String }</small>
+						</td>
+						<td style="text-align: right;">
+							<form action="/partidos/eliminar" method="POST" style="margin:0;">
+								<input type="hidden" name="id" value={ fmt.Sprintf("%d", p.ID) }/>
+								<button type="submit" class="secondary outline" style="padding: 4px 8px; font-size: 0.75rem;">Eliminar</button>
+							</form>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+}
+
+// 4. Selector y Lista de Tabla de Posiciones
+templ TablaList(ligas []DataBase.Liga, tabla []DataBase.TablaPosicione, ligaSeleccionada int32) {
+	<!-- Filtro por GET para elegir qué liga ver -->
+	<form action="/" method="GET" style="display: flex; gap: 0.5rem;">
+		<select name="liga_id" required style="margin-bottom: 0;">
+			<option value="">Ver posiciones de la Liga...</option>
+			for _, l := range ligas {
+				<option value={ fmt.Sprintf("%d", l.ID) } selected?={ l.ID == ligaSeleccionada }>{ l.Nombre }</option>
+			}
+		</select>
+		<button type="submit" class="contrast" style="width: auto; margin-bottom: 0;">Ver</button>
+	</form>
+
+	if ligaSeleccionada == 0 {
+		<p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 1rem;">Selecciona una liga para ver la tabla.</p>
+	} else if len(tabla) == 0 {
+		<p style="margin-top: 1rem;"><small>No hay equipos inscriptos en esta liga.</small></p>
+	} else {
+		<table style="margin-top: 1rem;">
+			<tbody>
+				for _, pos := range tabla {
+					<tr>
+						<td>
+							Eq. { fmt.Sprintf("%d", pos.EquipoID) } |
+							<strong>Pts: { fmt.Sprintf("%d", pos.Puntos.Int32) }</strong> |
+							G:{ fmt.Sprintf("%d", pos.PartidosGanados.Int32) } E:{ fmt.Sprintf("%d", pos.PartidosEmpatados.Int32) } P:{ fmt.Sprintf("%d", pos.PartidosPerdidos.Int32) }
+						</td>
+						<td style="text-align: right;">
+							<form action="/tabla/eliminar" method="POST" style="margin:0;">
+								<input type="hidden" name="liga_id" value={ fmt.Sprintf("%d", pos.LigaID) }/>
+								<input type="hidden" name="equipo_id" value={ fmt.Sprintf("%d", pos.EquipoID) }/>
+								<button type="submit" class="secondary outline" style="padding: 4px 8px; font-size: 0.75rem;">Sacar</button>
+							</form>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+}
