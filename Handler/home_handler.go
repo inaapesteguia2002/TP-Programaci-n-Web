@@ -7,7 +7,7 @@ import (
 
 	"DeRabona/DataBase"
 	"DeRabona/Logic"
-	"DeRabona/views"
+	views "DeRabona/Views"
 )
 
 // HomeHandler atiende la página principal: junta los datos de todas las entidades
