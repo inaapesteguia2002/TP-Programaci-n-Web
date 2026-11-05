@@ -1,55 +1,57 @@
 package views
 
-// Layout es la estructura base (caparazón) de todas las páginas del sistema
+import "DeRabona/DataBase"
+
+// Estructura base de la página (HTML, HEAD, BODY)
 templ Layout(title string) {
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <title>{ title }</title>
-        
-        <!-- Pico.css para estilos base limpios y responsivos -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
-        
-        <link rel="stylesheet" href="/static/styles.css"/>
-        
-        <!-- HTMX: El motor de nuestra interactividad -->
-        <script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0/dist/htmx.min.js"
-                integrity="sha384-BvJpBi08Kh31EqtJe5DRIeWrHWnCGkwytKs9NKF186Hhw96dEqdEMzZDeK9iEGTC"
-                crossorigin="anonymous"></script>
-    </head>
-    
-    <!-- hx-boost:inherited="true" transforma todos los enlaces normales en peticiones AJAX -->
-    <body hx-boost:inherited="true" class="container">
-        
-        <!-- Barra de navegación principal del Dashboard -->
-        <header>
-            <nav>
-                <ul>
-                    <li><strong> De Rabona - Admin</strong></li>
-                </ul>
-                <ul>
-                    <!-- Al tener hx-boost en el body, hacer clic acá no recarga la pestaña completa -->
-                    <li><a href="/ligas">Ligas</a></li>
-                    <li><a href="/equipos">Equipos</a></li>
-                    <li><a href="/partidos">Partidos</a></li>
-                    <li><a href="/tabla">Tabla</a></li>
-                </ul>
-            </nav>
-        </header>
+	<!DOCTYPE html>
+	<html lang="es" data-theme="light">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title }</title>
+			<!-- Pico.css para el estilo minimalista -->
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+		</head>
+		<body>
+			<main class="container">
+				{ children... }
+			</main>
+		</body>
+	</html>
+}
 
-        <!-- Contenedor principal donde se inyectarán las vistas de cada sección (Ligas, Equipos, etc.) -->
-        <main id="main-content" style="padding-top: 20px;">
-            { children... }
-        </main>
+// Componente de página principal que une el Layout, los formularios y las listas
+templ IndexPage( ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []DataBase.Partido, tabla []DataBase.TablaPosicione, ligaSeleccionada int32,) {
+	@Layout("De Rabona - Administración") {
+		<h1>Panel de Administración "De Rabona"</h1>
 
-        <!-- Footer simple para cerrar la estructura de la página -->
-        <footer style="margin-top: 40px; text-align: center;">
-            <hr/>
-            <small style="color: grey;">Trabajo Práctico 5 - Programación Web (SSR + HTMX)</small>
-        </footer>
-        
-    </body>
-    </html>
+		<hr/>
+		<section id="seccion-ligas">
+			<h2>1. Ligas</h2>
+			@LigaForm()
+			@LigaList(ligas)
+		</section>
+
+		<hr/>
+		<section id="seccion-equipos">
+			<h2>2. Equipos</h2>
+			@EquipoForm()
+			@EquipoList(equipos)
+		</section>
+
+		<hr/>
+		<section id="seccion-partidos">
+			<h2>3. Partidos</h2>
+			@PartidoForm(ligas, equipos)
+			@PartidoList(partidos)
+		</section>
+
+		<hr/>
+		<section id="seccion-tabla">
+			<h2>4. Tabla de Posiciones</h2>
+			@TablaForm(ligas, equipos)
+			@TablaList(ligas, tabla, ligaSeleccionada)
+		</section>
+	}
 }

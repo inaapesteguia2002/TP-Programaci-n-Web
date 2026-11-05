@@ -1,0 +1,126 @@
+package views
+
+import (
+	"fmt"
+	"DeRabona/DataBase"
+)
+
+// 1. COMPONENTE: FORMULARIO DE LIGAS
+templ LigaForm() {
+	<form action="/ligas" method="POST">
+		<fieldset>
+			<legend><strong>Crear Nueva Liga</strong></legend>
+			
+			<label for="nombre_liga">Nombre de la Liga:</label>
+			<input type="text" id="nombre_liga" name="nombre" placeholder="Ej. Liga Profesional" required/>
+
+			<label for="pais_liga">País:</label>
+			<input type="text" id="pais_liga" name="pais" placeholder="Ej. Argentina" required/>
+			
+			<button type="submit">Guardar Liga</button>
+		</fieldset>
+	</form>
+}
+
+// 2. COMPONENTE: FORMULARIO DE EQUIPOS
+templ EquipoForm() {
+	<form action="/equipos" method="POST">
+		<fieldset>
+			<legend><strong>Registrar Nuevo Equipo</strong></legend>
+			
+			<label for="nombre_equipo">Nombre del Equipo:</label>
+			<input type="text" id="nombre_equipo" name="nombre" placeholder="Ej. Boca Juniors" required/>
+			
+			<button type="submit">Guardar Equipo</button>
+		</fieldset>
+	</form>
+}
+
+// 3. COMPONENTE: FORMULARIO DE PARTIDOS
+templ PartidoForm(ligas []DataBase.Liga, equipos []DataBase.Equipo) {
+	<form action="/partidos" method="POST">
+		<fieldset>
+			<legend><strong>Cargar Partido o Resultado</strong></legend>
+
+			<label for="liga_partido">Liga:</label>
+			<select id="liga_partido" name="liga_id" required>
+				<option value="">Seleccione una Liga...</option>
+				for _, l := range ligas {
+					<option value={ fmt.Sprintf("%d", l.ID) }>{ l.Nombre }</option>
+				}
+			</select>
+			
+			<div class="grid">
+				<div>
+					<label for="equipo_local_id">Equipo Local:</label>
+					<select id="equipo_local_id" name="equipo_local_id" required>
+						<option value="">Seleccione Local...</option>
+						for _, eq := range equipos {
+							<option value={ fmt.Sprintf("%d", eq.ID) }>{ eq.Nombre }</option>
+						}
+					</select>
+				</div>
+				<div>
+					<label for="goles_local">Goles Local:</label>
+					<input type="number" id="goles_local" name="goles_local" min="0" value="0" required/>
+				</div>
+			</div>
+			
+			<div class="grid">
+				<div>
+					<label for="equipo_visitante_id">Equipo Visitante:</label>
+					<select id="equipo_visitante_id" name="equipo_visitante_id" required>
+						<option value="">Seleccione Visitante...</option>
+						for _, eq := range equipos {
+							<option value={ fmt.Sprintf("%d", eq.ID) }>{ eq.Nombre }</option>
+						}
+					</select>
+				</div>
+				<div>
+					<label for="goles_visitante">Goles Visitante:</label>
+					<input type="number" id="goles_visitante" name="goles_visitante" min="0" value="0" required/>
+				</div>
+			</div>
+
+			<label for="estado">Estado del Partido:</label>
+			<select id="estado" name="estado" required>
+				<option value="pendiente">Pendiente</option>
+				<option value="finalizado">Finalizado</option>
+			</select>
+			
+			<button type="submit">Guardar Partido</button>
+		</fieldset>
+	</form>
+}
+
+// 4. COMPONENTE: FORMULARIO DE INSCRIPCIÓN EN TABLA
+templ TablaForm(ligas []DataBase.Liga, equipos []DataBase.Equipo) {
+	<form action="/tabla" method="POST">
+		<fieldset>
+			<legend><strong>Inscribir Equipo en Liga</strong></legend>
+
+			<div class="grid">
+				<div>
+					<label for="liga_tabla">Liga:</label>
+					<select id="liga_tabla" name="liga_id" required>
+						<option value="">Seleccione Liga...</option>
+						for _, l := range ligas {
+							<option value={ fmt.Sprintf("%d", l.ID) }>{ l.Nombre }</option>
+						}
+					</select>
+				</div>
+				<div>
+					<label for="equipo_tabla">Equipo:</label>
+					<select id="equipo_tabla" name="equipo_id" required>
+						<option value="">Seleccione Equipo...</option>
+						for _, eq := range equipos {
+							<option value={ fmt.Sprintf("%d", eq.ID) }>{ eq.Nombre }</option>
+						}
+					</select>
+				</div>
+			</div>
+
+			<button type="submit">Inscribir en Liga</button>
+		</fieldset>
+	</form>
+}
