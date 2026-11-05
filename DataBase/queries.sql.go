@@ -212,7 +212,7 @@ func (q *Queries) GetPartido(ctx context.Context, id int32) (Partido, error) {
 }
 
 const getTablaPorLiga = `-- name: GetTablaPorLiga :many
-SELECT e.nombre as equipo, t.puntos, t.partidos_jugados, t.partidos_ganados, t.partidos_empatados, t.partidos_perdidos
+SELECT t.liga_id, t.equipo_id, e.nombre as equipo, t.puntos, t.partidos_jugados, t.partidos_ganados, t.partidos_empatados, t.partidos_perdidos
 FROM tabla_posiciones t
 JOIN equipos e ON t.equipo_id = e.id
 WHERE t.liga_id = $1
@@ -220,6 +220,8 @@ ORDER BY t.puntos DESC, e.nombre ASC
 `
 
 type GetTablaPorLigaRow struct {
+	LigaID            int32
+	EquipoID          int32
 	Equipo            string
 	Puntos            sql.NullInt32
 	PartidosJugados   sql.NullInt32
@@ -238,6 +240,8 @@ func (q *Queries) GetTablaPorLiga(ctx context.Context, ligaID int32) ([]GetTabla
 	for rows.Next() {
 		var i GetTablaPorLigaRow
 		if err := rows.Scan(
+			&i.LigaID,
+			&i.EquipoID,
 			&i.Equipo,
 			&i.Puntos,
 			&i.PartidosJugados,
@@ -389,7 +393,7 @@ func (q *Queries) ListPartidosLiga(ctx context.Context, ligaID int32) ([]Partido
 }
 
 const listTabla = `-- name: ListTabla :many
-SELECT e.nombre as equipo, t.puntos, t.partidos_jugados, t.partidos_ganados, t.partidos_empatados, t.partidos_perdidos
+SELECT t.liga_id, t.equipo_id, e.nombre as equipo, t.puntos, t.partidos_jugados, t.partidos_ganados, t.partidos_empatados, t.partidos_perdidos
 FROM tabla_posiciones t
 JOIN equipos e ON t.equipo_id = e.id
 WHERE t.liga_id = $1
@@ -397,6 +401,8 @@ ORDER BY t.puntos DESC, e.nombre ASC
 `
 
 type ListTablaRow struct {
+	LigaID            int32
+	EquipoID          int32
 	Equipo            string
 	Puntos            sql.NullInt32
 	PartidosJugados   sql.NullInt32
@@ -415,6 +421,8 @@ func (q *Queries) ListTabla(ctx context.Context, ligaID int32) ([]ListTablaRow, 
 	for rows.Next() {
 		var i ListTablaRow
 		if err := rows.Scan(
+			&i.LigaID,
+			&i.EquipoID,
 			&i.Equipo,
 			&i.Puntos,
 			&i.PartidosJugados,
