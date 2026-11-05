@@ -1,83 +1,51 @@
 package Handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"DeRabona/Logic"
-	"DeRabona/views"
 )
 
 type EquiposHandler struct {
 	Service *Logic.EquiposService
 }
 
-func (h *EquiposHandler) HandleEquipos(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	switch r.Method {
-	case http.MethodGet:
-		equipos, err := h.Service.ListEquipos(ctx)
-		if err != nil {
-			http.Error(w, "Error al obtener equipos", http.StatusInternalServerError)
-			return
-		}
-		// Renderiza la página completa usando el layout y componentes templ
-		views.IndexEquipos(equipos).Render(ctx, w)
-
-	case http.MethodPost:
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, "Formulario inválido", http.StatusBadRequest)
-			return
-		}
-		nombre := r.FormValue("nombre")
-
-		// CORREGIDO: Se pasa directamente el string 'nombre' acorde a EquiposService.CreateEquipo
-		_, err := h.Service.CreateEquipo(ctx, nombre)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		equipos, err := h.Service.ListEquipos(ctx)
-		if err != nil {
-			http.Error(w, "Error al listar equipos", http.StatusInternalServerError)
-			return
-		}
-
-		// Si la petición viene de HTMX, devolvemos solo el fragmento de la lista
-		if r.Header.Get("HX-Request") == "true" {
-			views.EquipoList(equipos).Render(ctx, w)
-			return
-		}
-
-		// Si es una petición clásica, aplicamos Post/Redirect/Get (PRG)
-		http.Redirect(w, r, "/equipos", http.StatusSeeOther)
-
-	case http.MethodDelete:
-		// Espera una ruta tipo /equipos/{id}
-		parts := strings.Split(r.URL.Path, "/")
-		if len(parts) != 3 {
-			http.Error(w, "URL inválida", http.StatusBadRequest)
-			return
-		}
-		id, err := strconv.Atoi(parts[2])
-		if err != nil {
-			http.Error(w, "ID inválido", http.StatusBadRequest)
-			return
-		}
-
-		err = h.Service.DeleteEquipo(ctx, int32(id))
-		if err != nil {
-			http.Error(w, "Error al eliminar equipo", http.StatusInternalServerError)
-			return
-		}
-
-		// Respuesta vacía con 200 OK para que HTMX remueva el elemento con outerHTML
-		w.WriteHeader(http.StatusOK)
-
-	default:
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+// Create atiende POST /equipos: parsea el formulario, guarda el equipo
+// y redirige a la página principal (patrón Post/Redirect/Get).
+func (h *EquiposHandler) Create(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "formulario inválido", http.StatusBadRequest)
+		return
 	}
+
+	nombre := strings.TrimSpace(r.FormValue("nombre"))
+	if nombre == "" {
+		http.Error(w, "el nombre del equipo es obligatorio", http.StatusBadRequest)
+		return
+	}
+
+	if _, err := h.Service.CreateEquipo(r.Context(), nombre); err != nil {
+		log.Printf("crear equipo: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *EquiposHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil || id <= 0 {
+		http.Error(w, "id inválido", http.StatusBadRequest)
+		return
+	}
+	if err := h.Service.DeleteEquipo(r.Context(), int32(id)); err != nil {
+		log.Printf("eliminar equipo: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

@@ -1,79 +1,54 @@
 package Handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"DeRabona/DataBase"
 	"DeRabona/Logic"
-	"DeRabona/views"
 )
 
 type LigasHandler struct {
 	Service *Logic.LigasService
 }
 
-func (h *LigasHandler) HandleLigas(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	switch r.Method {
-	case http.MethodGet:
-		ligas, err := h.Service.ListLigas(ctx)
-		if err != nil {
-			http.Error(w, "Error al obtener ligas", http.StatusInternalServerError)
-			return
-		}
-		views.IndexLigas(ligas).Render(ctx, w)
-
-	case http.MethodPost:
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, "Formulario inválido", http.StatusBadRequest)
-			return
-		}
-		nombre := r.FormValue("nombre")
-		pais := r.FormValue("pais")
-
-		_, err := h.Service.CreateLiga(ctx, DataBase.CreateLigaParams{Nombre: nombre, Pais: pais})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		ligas, err := h.Service.ListLigas(ctx)
-		if err != nil {
-			http.Error(w, "Error al listar ligas", http.StatusInternalServerError)
-			return
-		}
-
-		if r.Header.Get("HX-Request") == "true" {
-			views.LigaList(ligas).Render(ctx, w)
-			return
-		}
-
-		http.Redirect(w, r, "/ligas", http.StatusSeeOther)
-
-	case http.MethodDelete:
-		parts := strings.Split(r.URL.Path, "/")
-		if len(parts) != 3 {
-			http.Error(w, "URL inválida", http.StatusBadRequest)
-			return
-		}
-		id, err := strconv.Atoi(parts[2])
-		if err != nil {
-			http.Error(w, "ID inválido", http.StatusBadRequest)
-			return
-		}
-
-		err = h.Service.DeleteLiga(ctx, int32(id))
-		if err != nil {
-			http.Error(w, "Error al eliminar liga", http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-
-	default:
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+// Create atiende POST /ligas: parsea el formulario, guarda la liga
+// y redirige a la página principal (patrón Post/Redirect/Get).
+func (h *LigasHandler) Create(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "formulario inválido", http.StatusBadRequest)
+		return
 	}
+
+	nombre := strings.TrimSpace(r.FormValue("nombre"))
+	pais := strings.TrimSpace(r.FormValue("pais"))
+	if nombre == "" || pais == "" {
+		http.Error(w, "el nombre y el país de la liga son obligatorios", http.StatusBadRequest)
+		return
+	}
+
+	arg := DataBase.CreateLigaParams{Nombre: nombre, Pais: pais}
+	if _, err := h.Service.CreateLiga(r.Context(), arg); err != nil {
+		log.Printf("crear liga: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *LigasHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil || id <= 0 {
+		http.Error(w, "id inválido", http.StatusBadRequest)
+		return
+	}
+	if err := h.Service.DeleteLiga(r.Context(), int32(id)); err != nil {
+		log.Printf("eliminar liga: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

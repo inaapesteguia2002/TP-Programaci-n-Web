@@ -46,49 +46,42 @@ func main() {
 	tablaService := &Logic.TablaService{Repo: repo}
 
 	// 3. Instanciamos los Handlers inyectándoles los services correspondientes
+	homeHandler := &Handler.HomeHandler{
+		Ligas:    ligaService,
+		Equipos:  equipoService,
+		Partidos: partidoService,
+		Tabla:    tablaService,
+	}
 	equipoHandler := &Handler.EquiposHandler{Service: equipoService}
 	ligaHandler := &Handler.LigasHandler{Service: ligaService}
-	partidoHandler := &Handler.PartidosHandler{
-		PartidoService: partidoService,
-		LigaService:    ligaService,
-		EquipoService:  equipoService,
-	}
-	tablaHandler := &Handler.TablaHandler{
-		TablaService:  tablaService,
-		LigaService:   ligaService,
-		EquipoService: equipoService,
-	}
+	partidoHandler := &Handler.PartidosHandler{Service: partidoService}
+	tablaHandler := &Handler.TablaHandler{Service: tablaService}
 
 	// 4. Creamos el Multiplexor (ServeMux) y configuramos las rutas
 	mux := http.NewServeMux()
 
+	// Página principal (solo la raíz exacta "/")
+	mux.HandleFunc("GET /{$}", homeHandler.Index)
+
 	// Equipos
-	mux.HandleFunc("/equipos", equipoHandler.HandleEquipos)
-	mux.HandleFunc("/equipos/", equipoHandler.HandleEquipos)
+	mux.HandleFunc("POST /equipos", equipoHandler.Create)
+	mux.HandleFunc("POST /equipos/eliminar", equipoHandler.Delete)
 
 	// Ligas
-	mux.HandleFunc("/ligas", ligaHandler.HandleLigas)
-	mux.HandleFunc("/ligas/", ligaHandler.HandleLigas)
+	mux.HandleFunc("POST /ligas", ligaHandler.Create)
+	mux.HandleFunc("POST /ligas/eliminar", ligaHandler.Delete)
 
 	// Partidos
-	mux.HandleFunc("/partidos", partidoHandler.HandlePartidos)
-	mux.HandleFunc("/partidos/", partidoHandler.HandlePartidos)
+	mux.HandleFunc("POST /partidos", partidoHandler.Create)
+	mux.HandleFunc("POST /partidos/eliminar", partidoHandler.Delete)
 
 	// Tabla de Posiciones
-	mux.HandleFunc("/tabla", tablaHandler.HandleTabla)
+	mux.HandleFunc("POST /tabla", tablaHandler.Create)
+	mux.HandleFunc("POST /tabla/eliminar", tablaHandler.Delete)
 
-	// 5. Servidor de archivos estáticos y redirección raíz
+	// 5. Servidor de archivos estáticos
 	fileServer := http.FileServer(http.Dir("./static"))
-	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
-
-	// Redirigir la raíz ("/") directamente a "/ligas"
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/" {
-			http.Redirect(w, r, "/ligas", http.StatusSeeOther)
-			return
-		}
-		http.NotFound(w, r)
-	})
+	mux.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
 
 	port := ":8080"
 	fmt.Printf("Servidor escuchando en http://localhost%s\n", port)

@@ -1,80 +1,59 @@
 package Handler
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
 	"DeRabona/DataBase"
 	"DeRabona/Logic"
-	"DeRabona/views"
 )
 
 type TablaHandler struct {
-	TablaService  *Logic.TablaService
-	LigaService   *Logic.LigasService
-	EquipoService *Logic.EquiposService
+	Service *Logic.TablaService
 }
 
-func (h *TablaHandler) HandleTabla(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	switch r.Method {
-	case http.MethodGet:
-		// Lee el parámetro ?liga_id= de la URL (por defecto 1 si no viene especificado)
-		ligaIDStr := r.URL.Query().Get("liga_id")
-		var ligaID int32 = 1
-		if ligaIDStr != "" {
-			parsed, err := strconv.Atoi(ligaIDStr)
-			if err == nil {
-				ligaID = int32(parsed)
-			}
-		}
-
-		filas, err := h.TablaService.ObtenerTabla(ctx, ligaID)
-		if err != nil {
-			http.Error(w, "Error al obtener la tabla de posiciones", http.StatusInternalServerError)
-			return
-		}
-
-		ligas, _ := h.LigaService.ListLigas(ctx)
-		equipos, _ := h.EquipoService.ListEquipos(ctx)
-
-		views.IndexTabla(ligaID, filas, ligas, equipos).Render(ctx, w)
-
-	case http.MethodPost:
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, "Formulario inválido", http.StatusBadRequest)
-			return
-		}
-
-		ligaID, _ := strconv.Atoi(r.FormValue("liga_id"))
-		equipoID, _ := strconv.Atoi(r.FormValue("equipo_id"))
-
-		arg := DataBase.CreateTablaParams{
-			LigaID:   int32(ligaID),
-			EquipoID: int32(equipoID),
-		}
-
-		_, err := h.TablaService.RegistrarEquipo(ctx, arg)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		filas, err := h.TablaService.ObtenerTabla(ctx, int32(ligaID))
-		if err != nil {
-			http.Error(w, "Error al actualizar la tabla", http.StatusInternalServerError)
-			return
-		}
-
-		if r.Header.Get("HX-Request") == "true" {
-			views.TablaList(filas).Render(ctx, w)
-			return
-		}
-
-		http.Redirect(w, r, "/tabla?liga_id="+strconv.Itoa(ligaID), http.StatusSeeOther)
-
-	default:
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+// Create atiende POST /tabla: inscribe un equipo en una liga
+// y redirige a la página principal (patrón Post/Redirect/Get).
+func (h *TablaHandler) Create(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "formulario inválido", http.StatusBadRequest)
+		return
 	}
+
+	ligaID, err1 := strconv.Atoi(r.FormValue("liga_id"))
+	equipoID, err2 := strconv.Atoi(r.FormValue("equipo_id"))
+	if err1 != nil || err2 != nil || ligaID <= 0 || equipoID <= 0 {
+		http.Error(w, "liga y equipo son obligatorios", http.StatusBadRequest)
+		return
+	}
+
+	arg := DataBase.CreateTablaParams{
+		LigaID:   int32(ligaID),
+		EquipoID: int32(equipoID),
+	}
+	if _, err := h.Service.RegistrarEquipo(r.Context(), arg); err != nil {
+		log.Printf("inscribir equipo en liga: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *TablaHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	ligaID, err1 := strconv.Atoi(r.FormValue("liga_id"))
+	equipoID, err2 := strconv.Atoi(r.FormValue("equipo_id"))
+	if err1 != nil || err2 != nil || ligaID <= 0 || equipoID <= 0 {
+		http.Error(w, "datos inválidos", http.StatusBadRequest)
+		return
+	}
+	// AJUSTAR: campos reales de DeleteEquipoDeTablaParams
+	arg := DataBase.DeleteEquipoDeTablaParams{LigaID: int32(ligaID), EquipoID: int32(equipoID)}
+	if err := h.Service.RemoverEquipo(r.Context(), arg); err != nil {
+		log.Printf("sacar equipo de tabla: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
