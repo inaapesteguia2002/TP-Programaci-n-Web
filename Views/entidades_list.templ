@@ -81,7 +81,7 @@ templ PartidoList(partidos []DataBase.Partido) {
 }
 
 // 4. Selector y Lista de Tabla de Posiciones
-templ TablaList(ligas []DataBase.Liga, tabla []DataBase.TablaPosicione, ligaSeleccionada int32) {
+templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32) {
 	<!-- Filtro por GET para elegir qué liga ver -->
 	<form action="/" method="GET" style="display: flex; gap: 0.5rem;">
 		<select name="liga_id" required style="margin-bottom: 0;">

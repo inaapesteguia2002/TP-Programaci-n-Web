@@ -22,7 +22,7 @@ templ Layout(title string) {
 }
 
 // Componente de página principal que une el Layout, los formularios y las listas
-templ IndexPage( ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []DataBase.Partido, tabla []DataBase.TablaPosicione, ligaSeleccionada int32,) {
+templ IndexPage( ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []DataBase.Partido, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32,) {
 	@Layout("De Rabona - Administración") {
 		<h1>Panel de Administración "De Rabona"</h1>
 
