@@ -7,7 +7,7 @@ import (
 
 	"DeRabona/DataBase"
 	"DeRabona/Logic"
-	"DeRabona/views"
+	"DeRabona/Views"
 )
 
 // HomeHandler atiende la página principal: junta los datos de todas las entidades
@@ -63,7 +63,7 @@ func (h *HomeHandler) Index(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := views.IndexPage(ligas, equipos, partidos, tabla, ligaSeleccionada).Render(ctx, w); err != nil {
+	if err := Views.IndexPage(ligas, equipos, partidos, tabla, ligaSeleccionada).Render(ctx, w); err != nil {
 		log.Printf("renderizar index: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 	}
