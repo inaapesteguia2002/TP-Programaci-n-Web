@@ -64,18 +64,20 @@ test-api:
 	fi
 
 run-app:
-	# 1. Tareas previas: limpieza y generación de código (sqlc + templ)
+	# 1. Tareas previas: limpieza y generación de código (sqlc + templ), levantar la base de datos y esperar a que esté lista
 	docker compose down -v --remove-orphans || true
 	sqlc generate
 	templ generate
-
-	# 2. Levantar la base de datos y esperar a que esté lista
 	docker compose up -d postgresql
 	@echo "Esperando a que PostgreSQL acepte conexiones..."
 	@until docker exec postgres_container pg_isready -U postgres > /dev/null 2>&1; do \
 		sleep 1; \
 	done
 
-	# 3. Ejecutar la aplicación en local (o levantar por docker según prefieras)
-	@echo "Arrancando la aplicación en http://localhost:8080"
-	go run main.go
+	# 2. Ejecutar la aplicación en local (o levantar por docker según prefieras)
+	@echo "Arrancando la aplicación en http://localhost:8080 (Ctrl+C para salir y limpiar)"
+	-go run main.go
+
+	# 3. Tareas posteriores: borrado de contenedores y volúmenes al apretar Ctrl+C
+	docker compose down -v
+	
