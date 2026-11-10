@@ -2,8 +2,10 @@ package Handler
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"DeRabona/DataBase"
@@ -14,11 +16,16 @@ type PartidosHandler struct {
 	Service *Logic.PartidosService
 }
 
+// errorEnForm vuelve a la página principal (sección partidos) mostrando el mensaje en la propia interfaz, en vez de mostrar una página de error aparte.
+func errorEnForm(w http.ResponseWriter, r *http.Request, msg string) {
+	http.Redirect(w, r, "/?error="+url.QueryEscape(msg)+"#seccion-partidos", http.StatusSeeOther)
+}
+
 // Create atiende POST /partidos: parsea y valida el formulario, guarda el partido
 // y redirige a la página principal (patrón Post/Redirect/Get).
 func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		http.Error(w, "formulario inválido", http.StatusBadRequest)
+		errorEnForm(w, r, "formulario inválido")
 		return
 	}
 
@@ -30,19 +37,19 @@ func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 	estado := r.FormValue("estado")
 
 	if err1 != nil || err2 != nil || err3 != nil || err4 != nil || err5 != nil {
-		http.Error(w, "los datos del partido no son válidos", http.StatusBadRequest)
+		errorEnForm(w, r, "los datos del partido no son válidos")
 		return
 	}
 	if golesLocal < 0 || golesVisitante < 0 {
-		http.Error(w, "los goles no pueden ser negativos", http.StatusBadRequest)
+		errorEnForm(w, r, "los goles no pueden ser negativos")
 		return
 	}
 	if localID == visitanteID {
-		http.Error(w, "el equipo local y el visitante deben ser distintos", http.StatusBadRequest)
+		errorEnForm(w, r, "un equipo no puede jugar contra sí mismo")
 		return
 	}
 	if estado != "pendiente" && estado != "finalizado" {
-		http.Error(w, "estado inválido", http.StatusBadRequest)
+		errorEnForm(w, r, "estado inválido")
 		return
 	}
 
@@ -56,6 +63,12 @@ func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := h.Service.CreatePartido(r.Context(), arg); err != nil {
+
+		// Regla de negocio: los dos equipos tienen que estar inscriptos en la liga
+		if errors.Is(err, Logic.ErrEquipoFueraDeLiga) {
+			errorEnForm(w, r, err.Error())
+			return
+		}
 		log.Printf("crear partido: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return

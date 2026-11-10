@@ -8,6 +8,9 @@ import (
 	"DeRabona/DataBase"
 )
 
+// ErrEquipoFueraDeLiga se devuelve cuando alguno de los equipos del partido no está inscripto en la liga elegida.
+var ErrEquipoFueraDeLiga = errors.New("ambos equipos deben estar inscriptos en la liga seleccionada")
+
 // PartidosService maneja las reglas de negocio para los partidos
 type PartidosService struct {
 	Repo *DataBase.Queries
@@ -16,11 +19,31 @@ type PartidosService struct {
 // CreatePartido valida y guarda un nuevo partido.
 // Si el partido ya está finalizado, también actualiza la tabla de posiciones.
 func (s *PartidosService) CreatePartido(ctx context.Context, arg DataBase.CreatePartidoParams) (DataBase.Partido, error) {
+
+	// Regla de negocio: Un equipo no puede jugar contra sí mismo
 	if arg.EquipoLocalID == arg.EquipoVisitanteID {
 		return DataBase.Partido{}, errors.New("un equipo no puede jugar contra sí mismo")
 	}
 	if arg.LigaID <= 0 {
 		return DataBase.Partido{}, errors.New("el ID de la liga es inválido")
+	}
+
+	// Regla de negocio: ambos equipos deben pertenecer a la liga del partido
+	inscriptos, err := s.Repo.GetTablaPorLiga(ctx, arg.LigaID)
+	if err != nil {
+		return DataBase.Partido{}, err
+	}
+	var localEnLiga, visitanteEnLiga bool
+	for _, fila := range inscriptos {
+		if fila.EquipoID == arg.EquipoLocalID {
+			localEnLiga = true
+		}
+		if fila.EquipoID == arg.EquipoVisitanteID {
+			visitanteEnLiga = true
+		}
+	}
+	if !localEnLiga || !visitanteEnLiga {
+		return DataBase.Partido{}, ErrEquipoFueraDeLiga
 	}
 
 	partido, err := s.Repo.CreatePartido(ctx, arg)
