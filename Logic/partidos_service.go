@@ -93,6 +93,35 @@ func (s *PartidosService) sumarATabla(ctx context.Context, ligaID, equipoID, pro
 	})
 }
 
+// revertirEnTabla deshace el efecto de un partido finalizado en la tabla de posiciones.
+// Si el partido estaba pendiente nunca impactó en la tabla, así que no hace nada.
+func revertirEnTabla(ctx context.Context, q *DataBase.Queries, p DataBase.Partido) error {
+	if p.Estado.String != "finalizado" {
+		return nil
+	}
+	gl, gv := p.GolesLocal.Int32, p.GolesVisitante.Int32
+
+	if err := restarATabla(ctx, q, p.LigaID, p.EquipoLocalID, gl, gv); err != nil {
+		return err
+	}
+	return restarATabla(ctx, q, p.LigaID, p.EquipoVisitanteID, gv, gl)
+}
+
+// restarATabla resta a la fila de un equipo lo que le había sumado un partido.
+func restarATabla(ctx context.Context, q *DataBase.Queries, ligaID, equipoID, propios, rival int32) error {
+	pts, g, e, perd := resultado(propios, rival)
+	n := func(v int32) sql.NullInt32 { return sql.NullInt32{Int32: v, Valid: true} }
+
+	return q.RestarTabla(ctx, DataBase.RestarTablaParams{
+		LigaID:            ligaID,
+		EquipoID:          equipoID,
+		Puntos:            n(pts),
+		PartidosGanados:   n(g),
+		PartidosEmpatados: n(e),
+		PartidosPerdidos:  n(perd),
+	})
+}
+
 // ListPartidos devuelve todos los partidos
 func (s *PartidosService) ListPartidos(ctx context.Context) ([]DataBase.Partido, error) {
 	return s.Repo.ListPartidos(ctx)
