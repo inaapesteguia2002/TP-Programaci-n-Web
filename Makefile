@@ -79,5 +79,6 @@ run-app:
 	-go run main.go
 
 	# 3. Tareas posteriores: borrado de contenedores y volúmenes al apretar Ctrl+C
+	@echo "Cerrando aplicación y limpiando contenedores y volúmenes..."
 	docker compose down -v
 	
