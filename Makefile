@@ -74,11 +74,9 @@ run-app:
 		sleep 1; \
 	done
 
-	# 2. Ejecutar la aplicación en local (o levantar por docker según prefieras)
-	@echo "Arrancando la aplicación en http://localhost:8080 (Ctrl+C para salir y limpiar)"
-	-go run main.go
+	# 2 y 3. Ejecutar la aplicación y limpiar al apretar Ctrl+C
+    @echo "Arrancando la aplicación en http://localhost:8080/ (Ctrl+C para salir y limpiar)"
+    @trap 'echo "\nLimpiando contenedores..."; docker compose down -v' INT TERM EXIT; \
+    go run main.go
 
-	# 3. Tareas posteriores: borrado de contenedores y volúmenes al apretar Ctrl+C
-	@echo "Cerrando aplicación y limpiando contenedores y volúmenes..."
-	docker compose down -v
 	
