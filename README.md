@@ -40,3 +40,6 @@ Para probar la interfaz y el funcionamiento integral del sistema, sigue estos pa
    - Abrir un navegador web.
    - Ingresar a **`http://localhost:8080/`**
    - Desde el panel, podrás interactuar visualmente con las Ligas, Equipos, Partidos y la Tabla de Posiciones, reflejándose los cambios directamente en la base de datos.
+  
+5. **Finalizar ejecución**
+   - Presionar ctrl + C desde la consola.
