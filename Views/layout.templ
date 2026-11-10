@@ -12,41 +12,8 @@ templ Layout(title string) {
 			<title>{ title }</title>
 			<!-- Pico.css para el estilo minimalista -->
 			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
-			<style>
-				.navbar-sticky {
-					position: sticky;
-					top: 0;
-					z-index: 100;
-					background: rgba(255, 255, 255, 0.92);
-					backdrop-filter: blur(8px);
-					border-bottom: 1px solid #e2e8f0;
-					padding: 0.25rem 0;
-				}
-				.hero-banner {
-					background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #065f46 100%);
-					color: #ffffff;
-					padding: 2.5rem 2rem;
-					border-radius: 12px;
-					text-align: center;
-					margin: 1.5rem 0 2rem 0;
-					box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-				}
-				.hero-banner h1 {
-					color: #ffffff;
-					font-size: 2.75rem;
-					font-weight: 800;
-					margin-bottom: 0.5rem;
-				}
-				.hero-banner p {
-					color: #cbd5e1;
-					font-size: 1.1rem;
-					max-width: 680px;
-					margin: 0 auto;
-				}
-				section {
-					scroll-margin-top: 5rem;
-				}
-			</style>
+			<!-- Tu hoja de estilos personalizada (cancha de fútbol) -->
+			<link rel="stylesheet" href="/static/estilos.css"/>
 		</head>
 		<body>
 			<!-- ÍNDICE DE NAVEGACIÓN FIJO ARRIBA -->
@@ -68,8 +35,8 @@ templ Layout(title string) {
 				{ children... }
 			</main>
 
-			<footer class="container" style="text-align: center; padding: 2rem 0; opacity: 0.65;">
-				<small>De Rabona — Gestión de Torneos y Estadísticas de Fútbol</small>
+			<footer class="container" style="text-align: center; padding: 2rem 0;">
+				<small>⚽ De Rabona — Gestión de Torneos y Estadísticas de Fútbol</small>
 			</footer>
 		</body>
 	</html>
@@ -82,7 +49,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 		<div class="hero-banner">
 			<h1>⚽ De Rabona</h1>
 			<p>
-				Bienvenido al panel de administración de De Rabona. Aqui podrás crear y actualizar ligas, equipos y partidos de futbol al instante.
+				Bienvenido al panel de administración de De Rabona. Aquí podrás crear y actualizar ligas, equipos y partidos de fútbol al instante.
 			</p>
 		</div>
 
