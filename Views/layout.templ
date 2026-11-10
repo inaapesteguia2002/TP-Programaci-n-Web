@@ -44,7 +44,7 @@ templ IndexPage( ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Da
 		<section id="seccion-partidos">
 			<h2>3. Partidos</h2>
 			@PartidoForm(ligas, equipos)
-			@PartidoList(partidos)
+			@PartidoList(partidos, equipos)
 		</section>
 
 		<hr/>

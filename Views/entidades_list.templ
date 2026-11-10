@@ -5,6 +5,15 @@ import (
 	"DeRabona/DataBase"
 )
 
+func nombreEquipo(equipos []DataBase.Equipo, id int32) string {
+	for _, e := range equipos {
+		if e.ID == id {
+			return e.Nombre
+		}
+	}
+	return fmt.Sprintf("Equipo %d", id)
+}
+
 // 1. Lista de Ligas
 templ LigaList(ligas []DataBase.Liga) {
 	if len(ligas) == 0 {
@@ -52,7 +61,7 @@ templ EquipoList(equipos []DataBase.Equipo) {
 }
 
 // 3. Lista de Partidos
-templ PartidoList(partidos []DataBase.Partido) {
+templ PartidoList(partidos []DataBase.Partido, equipos []DataBase.Equipo) {
 	if len(partidos) == 0 {
 		<p><small>No hay partidos registrados.</small></p>
 	} else {
@@ -61,9 +70,9 @@ templ PartidoList(partidos []DataBase.Partido) {
 				for _, p := range partidos {
 					<tr>
 						<td>
-							Eq. { fmt.Sprintf("%d", p.EquipoLocalID) }
+							{ nombreEquipo(equipos, p.EquipoLocalID) }
 							<strong>({ fmt.Sprintf("%d", p.GolesLocal.Int32) } - { fmt.Sprintf("%d", p.GolesVisitante.Int32) })</strong>
-							Eq. { fmt.Sprintf("%d", p.EquipoVisitanteID) }
+							{ nombreEquipo(equipos, p.EquipoVisitanteID) }
 							<br/>
 							<small>{ p.Estado.String }</small>
 						</td>
@@ -103,8 +112,9 @@ templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, liga
 				for _, pos := range tabla {
 					<tr>
 						<td>
-							Eq. { fmt.Sprintf("%d", pos.EquipoID) } |
+							<strong>{ pos.Equipo }</strong> |
 							<strong>Pts: { fmt.Sprintf("%d", pos.Puntos.Int32) }</strong> |
+							PJ:{ fmt.Sprintf("%d", pos.PartidosJugados.Int32) }
 							G:{ fmt.Sprintf("%d", pos.PartidosGanados.Int32) } E:{ fmt.Sprintf("%d", pos.PartidosEmpatados.Int32) } P:{ fmt.Sprintf("%d", pos.PartidosPerdidos.Int32) }
 						</td>
 						<td style="text-align: right;">
