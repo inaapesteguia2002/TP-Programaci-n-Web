@@ -1,160 +1,213 @@
-/* ESTILOS GENERALES */
+/*  FONDO VERDE CÉSPED CON EFECTO DE FRANJAS DE CANCHA */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
+    background-color: #1b5e20;
+    background-image: repeating-linear-gradient(
+        0deg,
+        #1b5e20,
+        #1b5e20 45px,
+        #226b27 45px,
+        #226b27 90px
+    );
+    color: #1e293b;
+    min-height: 100vh;
 }
 
-.dashboard {
-    width: 100%;
-    max-width: 1200px; /* Ancho máximo para que no se estire demasiado */
+/*  BARRA DE NAVEGACIÓN (ÍNDICE) BIEN VISIBLE */
+.navbar-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #0b290e;
+    border-bottom: 3px solid #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+    padding: 0.4rem 0;
 }
 
-h1 {
-    color: #1a252f;
+.navbar-sticky nav strong {
+    color: #ffffff;
+    font-size: 1.35rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.navbar-sticky nav a {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.12);
+    font-weight: 700;
+    text-decoration: none;
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    transition: all 0.2s ease-in-out;
+}
+
+.navbar-sticky nav a:hover {
+    background-color: #ffffff;
+    color: #0b290e !important;
+    transform: translateY(-2px);
+}
+
+/* CARTEL PRINCIPAL (HERO) CON LÍNEAS DE CAL BLANCAS */
+.hero-banner {
+    background: linear-gradient(135deg, rgba(11, 41, 14, 0.92) 0%, rgba(27, 94, 32, 0.92) 100%);
+    border: 3px solid #ffffff;
+    border-radius: 14px;
+    padding: 3rem 2rem;
     text-align: center;
-    margin-bottom: 5px;
+    margin: 2rem 0 2.5rem 0;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    position: relative;
 }
 
-p {
-    text-align: center;
-    color: #666;
-    margin-bottom: 30px;
+.hero-banner h1 {
+    color: #ffffff;
+    font-size: 4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 0.75rem;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* GRILLA DE SECCIONES (CSS GRID) */
-.sections-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 20px;
+.hero-banner p {
+    color: #f1f5f9;
+    font-size: 1.2rem;
+    font-weight: 500;
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.5;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* TARJETAS (CARDS) */
-.card {
+/* TÍTULOS DE SECCIÓN Y TARJETAS (CONTRASTE LIMPIO SOBRE EL CÉSPED) */
+section {
+    scroll-margin-top: 5.5rem;
+    margin-bottom: 2.5rem;
+}
+
+article {
     background: #ffffff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    border-top: 4px solid #3498db; /* Un detalle de color en el borde superior */
-    display: flex;
-    flex-direction: column;
+    border-radius: 12px;
+    border-top: 6px solid #f59e0b; /* Detalle dorado/trofeo arriba de cada sección */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
 }
 
-.card h2 {
-    color: #2c3e50;
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 1.3rem;
-    border-bottom: 2px solid #ecf0f1;
-    padding-bottom: 10px;
+article > header {
+    background-color: #0f172a !important;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1.1rem 1.5rem;
 }
 
-/* FORMULARIOS */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 20px;
+article > header strong {
+    color: #ffffff;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* FORMULARIOS Y SELECTORES (DESPLEGABLES CLAROS) */
+fieldset legend strong {
+    color: #0f172a;
+    font-size: 1.1rem;
+}
+
+label {
+    font-weight: 600;
+    color: #1e293b;
 }
 
 input, select {
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-    background-color: #fff;
-    transition: border-color 0.2s;
+    border: 2px solid #94a3b8 !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    font-weight: 500;
+    border-radius: 8px !important;
 }
 
 input:focus, select:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.2);
+    border-color: #16a34a !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25) !important;
 }
 
-/* Contenedor específico para los goles (alineados a la par) */
-.goles-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+/* BOTONES DIFERENCIADOS POR ACCIÓN */
+
+/* Botón Principal (Guardar/Crear/Inscribir) */
+button[type="submit"]:not(.secondary):not(.contrast) {
+    background-color: #16a34a !important;
+    border-color: #15803d !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px rgba(22, 163, 74, 0.25);
+    transition: transform 0.1s, background-color 0.2s;
 }
 
-.goles-container input {
-    width: 100%;
-    text-align: center;
+button[type="submit"]:not(.secondary):not(.contrast):hover {
+    background-color: #15803d !important;
+    transform: translateY(-1px);
 }
 
-.goles-container span {
-    font-weight: bold;
-    color: #555;
+/* Botón de Seleccionar / Ver Tabla -> Azul Marcador */
+button.contrast {
+    background-color: #0284c7 !important;
+    border-color: #0369a1 !important;
+    color: #ffffff !important;
+    font-weight: 700;
 }
 
-/* BOTONES */
-button {
-    font-family: inherit;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+button.contrast:hover {
+    background-color: #0369a1 !important;
 }
 
-button:active {
-    transform: scale(0.98);
-}
-
-.btn-primary {
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    padding: 12px;
+/* Botón de Eliminar/Borrar/Sacar */
+button.secondary.outline {
+    background-color: #dc2626 !important;
+    border: 1px solid #b91c1c !important;
+    color: #ffffff !important;
+    font-weight: 700;
     border-radius: 6px;
-    font-size: 15px;
-    font-weight: bold;
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase;
 }
 
-.btn-primary:hover {
-    background-color: #27ae60;
+button.secondary.outline:hover {
+    background-color: #991b1b !important;
+    transform: scale(1.03);
 }
 
-.btn-delete {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 6px 10px;
+/* TABLAS Y ETIQUETAS DE ESTADO */
+table th {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+table td {
+    vertical-align: middle;
+}
+
+mark {
+    background-color: #fef08a;
+    color: #854d0e;
+    font-weight: 700;
+    padding: 3px 8px;
     border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.78rem;
 }
 
-.btn-delete:hover {
-    background-color: #c0392b;
+/* PIE DE PÁGINA EN BLANCO SOBRE EL CÉSPED */
+footer small {
+    color: #ffffff;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
-
-/* LISTAS DINÁMICAS */
-.entity-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex-grow: 1; /* Hace que la lista ocupe el espacio sobrante de la tarjeta */
-}
-
-.entity-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f8f9fa;
-    padding: 12px 15px;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
 .entity-list li strong {
     color: #2c3e50;
 }
