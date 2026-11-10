@@ -13,7 +13,8 @@ type PartidosService struct {
 	Repo *DataBase.Queries
 }
 
-// CreatePartido valida y guarda un nuevo partido
+// CreatePartido valida y guarda un nuevo partido.
+// Si el partido ya está finalizado, también actualiza la tabla de posiciones.
 func (s *PartidosService) CreatePartido(ctx context.Context, arg DataBase.CreatePartidoParams) (DataBase.Partido, error) {
 	// Regla de negocio: Un equipo no puede jugar contra sí mismo
 	if arg.EquipoLocalID == arg.EquipoVisitanteID {
@@ -23,7 +24,51 @@ func (s *PartidosService) CreatePartido(ctx context.Context, arg DataBase.Create
 		return DataBase.Partido{}, errors.New("el ID de la liga es inválido")
 	}
 
-	return s.Repo.CreatePartido(ctx, arg)
+	partido, err := s.Repo.CreatePartido(ctx, arg)
+	if err != nil {
+		return DataBase.Partido{}, err
+	}
+
+	if partido.Estado.String == "finalizado" {
+		gl, gv := partido.GolesLocal.Int32, partido.GolesVisitante.Int32
+
+		if err := s.sumarATabla(ctx, partido.LigaID, partido.EquipoLocalID, gl, gv); err != nil {
+			return DataBase.Partido{}, err
+		}
+		if err := s.sumarATabla(ctx, partido.LigaID, partido.EquipoVisitanteID, gv, gl); err != nil {
+			return DataBase.Partido{}, err
+		}
+	}
+
+	return partido, nil
+}
+
+// resultado devuelve puntos, ganados, empatados y perdidos para un equipo
+// según los goles que hizo y los que le hicieron.
+func resultado(propios, rival int32) (puntos, ganados, empatados, perdidos int32) {
+	switch {
+	case propios > rival:
+		return 3, 1, 0, 0
+	case propios < rival:
+		return 0, 0, 0, 1
+	default:
+		return 1, 0, 1, 0
+	}
+}
+
+// sumarATabla impacta el resultado de un partido en la fila de un equipo.
+func (s *PartidosService) sumarATabla(ctx context.Context, ligaID, equipoID, propios, rival int32) error {
+	pts, g, e, p := resultado(propios, rival)
+	n := func(v int32) sql.NullInt32 { return sql.NullInt32{Int32: v, Valid: true} }
+
+	return s.Repo.UpdateTabla(ctx, DataBase.UpdateTablaParams{
+		LigaID:            ligaID,
+		EquipoID:          equipoID,
+		Puntos:            n(pts),
+		PartidosGanados:   n(g),
+		PartidosEmpatados: n(e),
+		PartidosPerdidos:  n(p),
+	})
 }
 
 // ListPartidos devuelve todos los partidos
