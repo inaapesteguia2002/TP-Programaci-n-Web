@@ -95,7 +95,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-ligas">
 			<article>
-				<header><strong>🌍 1. Ligas y Competiciones</strong></header>
+				<header><strong> Ligas y Competiciones</strong></header>
 				<div class="grid">
 					<div>@LigaForm()</div>
 					<div>@LigaList(ligas)</div>
@@ -105,7 +105,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-equipos">
 			<article>
-				<header><strong>🛡️ 2. Equipos</strong></header>
+				<header><strong> Equipos</strong></header>
 				<div class="grid">
 					<div>@EquipoForm()</div>
 					<div>@EquipoList(equipos)</div>
@@ -115,7 +115,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-partidos">
 			<article>
-				<header><strong>📅 3. Partidos y Resultados</strong></header>
+				<header><strong> Partidos y Resultados</strong></header>
 				if errorMsg != "" {
 					<p role="alert" style="background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px;">{ errorMsg }</p>
 				}
@@ -128,7 +128,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-tabla">
 			<article>
-				<header><strong>🏆 4. Tabla de Posiciones</strong></header>
+				<header><strong> Tabla de Posiciones</strong></header>
 				<div class="grid">
 					<div>@TablaForm(ligas, equipos)</div>
 					<div>@TablaList(ligas, tabla, ligaSeleccionada)</div>
