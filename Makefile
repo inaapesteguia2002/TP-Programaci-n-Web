@@ -75,8 +75,7 @@ run-app:
 	done
 
 	# 2 y 3. Ejecutar la aplicación y limpiar al apretar Ctrl+C
-    @echo "Arrancando la aplicación en http://localhost:8080/ (Ctrl+C para salir y limpiar)"
-    @trap 'echo "\nLimpiando contenedores..."; docker compose down -v' INT TERM EXIT; \
-    go run main.go
-
+	@echo "Arrancando la aplicación en http://localhost:8080/ (Ctrl+C para salir y limpiar)"
+	@trap 'echo "\nLimpiando contenedores..."; docker compose down -v' INT TERM EXIT; \
+	go run main.go
 	
