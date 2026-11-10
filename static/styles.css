@@ -1,4 +1,4 @@
-/*  FONDO VERDE CÉSPED CON EFECTO DE FRANJAS DE CANCHA */
+/* FONDO VERDE CÉSPED */
 body {
     background-color: #1b5e20;
     background-image: repeating-linear-gradient(
@@ -12,7 +12,7 @@ body {
     min-height: 100vh;
 }
 
-/*  BARRA DE NAVEGACIÓN (ÍNDICE) BIEN VISIBLE */
+/* ÍNDICE */
 .navbar-sticky {
     position: sticky;
     top: 0;
@@ -47,7 +47,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* CARTEL PRINCIPAL (HERO) CON LÍNEAS DE CAL BLANCAS */
+/* CARTEL PRINCIPAL */
 .hero-banner {
     background: linear-gradient(135deg, rgba(11, 41, 14, 0.92) 0%, rgba(27, 94, 32, 0.92) 100%);
     border: 3px solid #ffffff;
@@ -88,7 +88,7 @@ section {
 article {
     background: #ffffff;
     border-radius: 12px;
-    border-top: 6px solid #f59e0b; /* Detalle dorado/trofeo arriba de cada sección */
+    border-top: 6px solid #f59e0b;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
     overflow: hidden;
 }
@@ -106,7 +106,7 @@ article > header strong {
     text-transform: uppercase;
 }
 
-/* FORMULARIOS Y SELECTORES (DESPLEGABLES CLAROS) */
+/* SELECTORES */
 fieldset legend strong {
     color: #0f172a;
     font-size: 1.1rem;
@@ -150,7 +150,7 @@ button[type="submit"]:not(.secondary):not(.contrast):hover {
     transform: translateY(-1px);
 }
 
-/* Botón de Seleccionar / Ver Tabla -> Azul Marcador */
+/* Botón de Seleccionar/Ver Tabla*/
 button.contrast {
     background-color: #0284c7 !important;
     border-color: #0369a1 !important;
@@ -162,7 +162,7 @@ button.contrast:hover {
     background-color: #0369a1 !important;
 }
 
-/* Botón de Eliminar/Borrar/Sacar */
+/* Botón de Eliminar/Borrar */
 button.secondary.outline {
     background-color: #dc2626 !important;
     border: 1px solid #b91c1c !important;
@@ -179,7 +179,7 @@ button.secondary.outline:hover {
     transform: scale(1.03);
 }
 
-/* TABLAS Y ETIQUETAS DE ESTADO */
+/* TABLAS GENERALES Y ETIQUETAS DE ESTADO */
 table th {
     background-color: #f1f5f9;
     color: #0f172a;
@@ -202,12 +202,110 @@ mark {
     font-size: 0.78rem;
 }
 
-/* PIE DE PÁGINA EN BLANCO SOBRE EL CÉSPED */
+/* DISEÑO TABLA DE POSICIONES */
+.selector-liga-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 1.2rem;
+}
+
+.selector-liga-form select,
+.selector-liga-form button {
+    margin-bottom: 0 !important;
+}
+
+.tabla-posiciones {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tabla-posiciones thead th {
+    background-color: #0f172a;
+    color: #ffffff;
+    padding: 12px 10px;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid #16a34a;
+}
+
+.tabla-posiciones tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.tabla-posiciones tbody tr:hover {
+    background-color: #f0fdf4 !important;
+}
+
+/* Destacar al líder del torneo (1° puesto) */
+.tabla-posiciones tbody tr.fila-lider {
+    background-color: #fefce8;
+    border-left: 4px solid #eab308;
+}
+
+/* Alineación de columnas */
+.col-pos {
+    width: 55px;
+    text-align: center !important;
+}
+
+.col-equipo {
+    text-align: left !important;
+    font-size: 1rem;
+}
+
+.col-stat {
+    width: 60px;
+    text-align: center !important;
+    font-variant-numeric: tabular-nums;
+    color: #475569;
+    font-weight: 600;
+}
+
+.stat-g {
+    color: #15803d;
+}
+
+.stat-p {
+    color: #b91c1c;
+}
+
+.col-pts {
+    width: 75px;
+    text-align: center !important;
+    background-color: rgba(241, 245, 249, 0.7);
+}
+
+.col-accion {
+    width: 90px;
+    text-align: center !important;
+}
+
+/* Pastilla destacada para los Puntos */
+.pts-pill {
+    display: inline-block;
+    background-color: #0f172a;
+    color: #ffffff;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    min-width: 34px;
+}
+
+.empty-msg {
+    text-align: center !important;
+    padding: 2rem !important;
+    color: #64748b;
+    font-style: italic;
+}
+
+/* PIE DE PÁGINA EN BLANCO */
 footer small {
     color: #ffffff;
     font-weight: 600;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-.entity-list li strong {
-    color: #2c3e50;
 }
