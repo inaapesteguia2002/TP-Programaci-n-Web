@@ -36,7 +36,7 @@ templ Layout(title string) {
 			</main>
 
 			<footer class="container" style="text-align: center; padding: 2rem 0;">
-				<small>⚽ De Rabona — Gestión de Torneos y Estadísticas de Fútbol</small>
+				<small>⚽ De Rabona</small>
 			</footer>
 		</body>
 	</html>
@@ -44,7 +44,7 @@ templ Layout(title string) {
 
 // Componente de página principal que une el Layout, los formularios y las listas
 templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []DataBase.Partido, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32, errorMsg string) {
-	@Layout("De Rabona - Gestión de Torneos") {
+	@Layout("De Rabona - Página de fútbol") {
 		<!-- ENCABEZADO / TÍTULO Y DESCRIPCIÓN -->
 		<div class="hero-banner">
 			<h1>⚽ De Rabona</h1>
@@ -62,7 +62,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-ligas">
 			<article>
-				<header><strong>🌍 Ligas y Competiciones</strong></header>
+				<header><strong>Ligas y Competiciones</strong></header>
 				<div class="grid">
 					<div>@LigaForm()</div>
 					<div>@LigaList(ligas)</div>
@@ -72,7 +72,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-equipos">
 			<article>
-				<header><strong>🛡️ Equipos</strong></header>
+				<header><strong>Equipos</strong></header>
 				<div class="grid">
 					<div>@EquipoForm()</div>
 					<div>@EquipoList(equipos)</div>
@@ -82,7 +82,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-partidos">
 			<article>
-				<header><strong>📅 Partidos y Resultados</strong></header>
+				<header><strong>Partidos y Resultados</strong></header>
 				if errorMsg != "" {
 					<p role="alert" style="background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px;">{ errorMsg }</p>
 				}
@@ -96,7 +96,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 		<!-- SECCIÓN TABLA A LO ANCHO -->
 		<section id="seccion-tabla">
 			<article>
-				<header><strong>🏆 Tabla de Posiciones</strong></header>
+				<header><strong>Tabla de Posiciones</strong></header>
 				@TablaForm(ligas, equipos)
 				<hr/>
 				@TablaList(ligas, tabla, ligaSeleccionada)
