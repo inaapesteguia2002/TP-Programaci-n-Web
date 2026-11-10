@@ -14,6 +14,7 @@ var ErrEquipoFueraDeLiga = errors.New("ambos equipos deben estar inscriptos en l
 // PartidosService maneja las reglas de negocio para los partidos
 type PartidosService struct {
 	Repo *DataBase.Queries
+	DB   *sql.DB // se usa para abrir transacciones
 }
 
 // CreatePartido valida y guarda un nuevo partido.
@@ -140,7 +141,30 @@ func (s *PartidosService) UpdatePartido(ctx context.Context, arg DataBase.Update
 	return s.Repo.UpdatePartido(ctx, arg)
 }
 
-// DeletePartido elimina un partido por su ID
+// DeletePartido elimina un partido y, si estaba finalizado, revierte su efecto en la tabla de posiciones.
+// Va en una transacción: o se borra el partido y se corrige la tabla, o no se hace nada.
 func (s *PartidosService) DeletePartido(ctx context.Context, id int32) error {
-	return s.Repo.DeletePartido(ctx, id)
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback() // si ya se hizo Commit, no tiene efecto
+
+	q := s.Repo.WithTx(tx)
+
+	partido, err := q.GetPartido(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil // ya no existe, no hay nada que borrar
+	}
+	if err != nil {
+		return err
+	}
+
+	if err := revertirEnTabla(ctx, q, partido); err != nil {
+		return err
+	}
+	if err := q.DeletePartido(ctx, id); err != nil {
+		return err
+	}
+	return tx.Commit()
 }

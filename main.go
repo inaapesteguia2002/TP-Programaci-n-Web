@@ -40,10 +40,10 @@ func main() {
 	repo := DataBase.New(db)
 
 	// 2. Instanciamos los Services inyectándoles el repo
-	// (el service de equipos también recibe la conexión para poder abrir transacciones al borrar)
+	// (equipos y partidos también reciben la conexión para poder abrir transacciones al borrar)
 	equipoService := &Logic.EquiposService{Repo: repo, DB: db}
 	ligaService := &Logic.LigasService{Repo: repo}
-	partidoService := &Logic.PartidosService{Repo: repo}
+	partidoService := &Logic.PartidosService{Repo: repo, DB: db}
 	tablaService := &Logic.TablaService{Repo: repo}
 
 	// 3. Instanciamos los Handlers inyectándoles los services correspondientes
