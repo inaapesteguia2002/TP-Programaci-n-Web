@@ -19,6 +19,9 @@ El sistema cumple estrictamente con la restricción de **cero archivos de JavaSc
 - **Herramientas CLI**: `templ` y `sqlc` instaladas en el entorno
 - **Make**
 
+## Instrucciones de uso del panel de administración (nuestra interfaz de usuario)
+Crear ligas indicando nombre y país al que pertenece. Luego crear equipos e inscribirlos en las ligas deseadas. Posteriormente ya se pueden crear partidos, seleccionando los equipos que participan, la liga a la que pertenece y el resultado correcto (tener en cuenta que para que el resultado se actualice en la tabla debe estar en el estado 'finalizado'). Luego desde la sección de Tablas se pueden visualizar las tablas de posiciones correspondientes a la liga seleccionada.
+
 ## Instrucciones de ejecución
 Para probar la interfaz y el funcionamiento integral del sistema, sigue estos pasos:
 
