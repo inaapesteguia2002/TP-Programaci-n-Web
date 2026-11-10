@@ -51,6 +51,11 @@ WHERE id = $1;
 DELETE FROM partidos
 WHERE id = $1;
 
+-- name: ListPartidosEquipo :many
+-- partidos en los que el equipo jugó, ya sea como local o como visitante
+SELECT * FROM partidos
+WHERE equipo_local_id = sqlc.arg(equipo_id) OR equipo_visitante_id = sqlc.arg(equipo_id);
+
 
 -- CRUD PARA LA TABLA PRINCIPAL: LIGAS
 
@@ -97,6 +102,16 @@ SET puntos = puntos + $3,
     partidos_ganados = partidos_ganados + $4,
     partidos_empatados = partidos_empatados + $5,
     partidos_perdidos = partidos_perdidos + $6
+WHERE liga_id = $1 AND equipo_id = $2;
+
+-- name: RestarTabla :exec
+-- deshace el efecto de un partido finalizado sobre la fila de un equipo
+UPDATE tabla_posiciones 
+SET puntos = puntos - $3, 
+    partidos_jugados = partidos_jugados - 1,
+    partidos_ganados = partidos_ganados - $4,
+    partidos_empatados = partidos_empatados - $5,
+    partidos_perdidos = partidos_perdidos - $6
 WHERE liga_id = $1 AND equipo_id = $2;
 
 -- name: ListTabla :many
