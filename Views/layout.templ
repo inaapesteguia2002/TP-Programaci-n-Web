@@ -5,56 +5,135 @@ import "DeRabona/DataBase"
 // Estructura base de la página (HTML, HEAD, BODY)
 templ Layout(title string) {
 	<!DOCTYPE html>
-	<html lang="es" data-theme="light">
+	<html lang="es" data-theme="light" style="scroll-behavior: smooth;">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>{ title }</title>
 			<!-- Pico.css para el estilo minimalista -->
 			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+			<style>
+				.navbar-sticky {
+					position: sticky;
+					top: 0;
+					z-index: 100;
+					background: rgba(255, 255, 255, 0.92);
+					backdrop-filter: blur(8px);
+					border-bottom: 1px solid #e2e8f0;
+					padding: 0.25rem 0;
+				}
+				.hero-banner {
+					background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #065f46 100%);
+					color: #ffffff;
+					padding: 2.5rem 2rem;
+					border-radius: 12px;
+					text-align: center;
+					margin: 1.5rem 0 2rem 0;
+					box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+				}
+				.hero-banner h1 {
+					color: #ffffff;
+					font-size: 2.75rem;
+					font-weight: 800;
+					margin-bottom: 0.5rem;
+				}
+				.hero-banner p {
+					color: #cbd5e1;
+					font-size: 1.1rem;
+					max-width: 680px;
+					margin: 0 auto;
+				}
+				section {
+					scroll-margin-top: 5rem;
+				}
+			</style>
 		</head>
 		<body>
+			<!-- ÍNDICE DE NAVEGACIÓN FIJO ARRIBA -->
+			<div class="navbar-sticky">
+				<nav class="container">
+					<ul>
+						<li><strong>⚽ De Rabona</strong></li>
+					</ul>
+					<ul>
+						<li><a href="#seccion-ligas">1. Ligas</a></li>
+						<li><a href="#seccion-equipos">2. Equipos</a></li>
+						<li><a href="#seccion-partidos">3. Partidos</a></li>
+						<li><a href="#seccion-tabla">4. Posiciones</a></li>
+					</ul>
+				</nav>
+			</div>
+
 			<main class="container">
 				{ children... }
 			</main>
+
+			<footer class="container" style="text-align: center; padding: 2rem 0; opacity: 0.65;">
+				<small>De Rabona — Gestión de Torneos y Estadísticas de Fútbol</small>
+			</footer>
 		</body>
 	</html>
 }
 
 // Componente de página principal que une el Layout, los formularios y las listas
-templ IndexPage( ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []DataBase.Partido, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32, errorMsg string) {
-	@Layout("De Rabona - Administración") {
-		<h1>Panel de Administración "De Rabona"</h1>
+templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []DataBase.Partido, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32, errorMsg string) {
+	@Layout("De Rabona - Gestión de Torneos") {
+		<!-- ENCABEZADO / TÍTULO Y DESCRIPCIÓN -->
+		<div class="hero-banner">
+			<h1>⚽ De Rabona</h1>
+			<p>
+				Sistema integral para la administración de competiciones de fútbol. Registrá ligas y clubes, cargá resultados de partidos y consultá las tablas de posiciones actualizadas al instante.
+			</p>
+		</div>
 
-		<hr/>
+		<!-- Alerta global si viene un error por query param -->
+		if errorMsg != "" {
+			<p role="alert" style="background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+				<strong>Atención:</strong> { errorMsg }
+			</p>
+		}
+
 		<section id="seccion-ligas">
-			<h2>1. Ligas</h2>
-			@LigaForm()
-			@LigaList(ligas)
+			<article>
+				<header><strong>🌍 1. Ligas y Competiciones</strong></header>
+				<div class="grid">
+					<div>@LigaForm()</div>
+					<div>@LigaList(ligas)</div>
+				</div>
+			</article>
 		</section>
 
-		<hr/>
 		<section id="seccion-equipos">
-			<h2>2. Equipos</h2>
-			@EquipoForm()
-			@EquipoList(equipos)
+			<article>
+				<header><strong>🛡️ 2. Equipos</strong></header>
+				<div class="grid">
+					<div>@EquipoForm()</div>
+					<div>@EquipoList(equipos)</div>
+				</div>
+			</article>
 		</section>
 
-		<hr/>
 		<section id="seccion-partidos">
-			<h2>3. Partidos</h2>
-			if errorMsg != "" {
-				<p role="alert" style="background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px;">{ errorMsg }</p>
-			}
-			@PartidoForm(ligas, equipos)
-			@PartidoList(partidos, equipos)
+			<article>
+				<header><strong>📅 3. Partidos y Resultados</strong></header>
+				if errorMsg != "" {
+					<p role="alert" style="background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px;">{ errorMsg }</p>
+				}
+				<div class="grid">
+					<div>@PartidoForm(ligas, equipos)</div>
+					<div>@PartidoList(partidos, equipos)</div>
+				</div>
+			</article>
 		</section>
 
-		<hr/>
 		<section id="seccion-tabla">
-			<h2>4. Tabla de Posiciones</h2>
-			@TablaForm(ligas, equipos)
-			@TablaList(ligas, tabla, ligaSeleccionada)
+			<article>
+				<header><strong>🏆 4. Tabla de Posiciones</strong></header>
+				<div class="grid">
+					<div>@TablaForm(ligas, equipos)</div>
+					<div>@TablaList(ligas, tabla, ligaSeleccionada)</div>
+				</div>
+			</article>
 		</section>
 	}
 }
