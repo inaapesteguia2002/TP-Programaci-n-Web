@@ -355,6 +355,43 @@ func (q *Queries) ListPartidos(ctx context.Context) ([]Partido, error) {
 	return items, nil
 }
 
+const listPartidosEquipo = `-- name: ListPartidosEquipo :many
+SELECT id, liga_id, equipo_local_id, equipo_visitante_id, goles_local, goles_visitante, estado FROM partidos
+WHERE equipo_local_id = $1 OR equipo_visitante_id = $1
+`
+
+// partidos en los que el equipo jugó, ya sea como local o como visitante
+func (q *Queries) ListPartidosEquipo(ctx context.Context, equipoID int32) ([]Partido, error) {
+	rows, err := q.db.QueryContext(ctx, listPartidosEquipo, equipoID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Partido
+	for rows.Next() {
+		var i Partido
+		if err := rows.Scan(
+			&i.ID,
+			&i.LigaID,
+			&i.EquipoLocalID,
+			&i.EquipoVisitanteID,
+			&i.GolesLocal,
+			&i.GolesVisitante,
+			&i.Estado,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPartidosLiga = `-- name: ListPartidosLiga :many
 SELECT id, liga_id, equipo_local_id, equipo_visitante_id, goles_local, goles_visitante, estado FROM partidos 
 WHERE liga_id = $1
@@ -441,6 +478,38 @@ func (q *Queries) ListTabla(ctx context.Context, ligaID int32) ([]ListTablaRow, 
 		return nil, err
 	}
 	return items, nil
+}
+
+const restarTabla = `-- name: RestarTabla :exec
+UPDATE tabla_posiciones 
+SET puntos = puntos - $3, 
+    partidos_jugados = partidos_jugados - 1,
+    partidos_ganados = partidos_ganados - $4,
+    partidos_empatados = partidos_empatados - $5,
+    partidos_perdidos = partidos_perdidos - $6
+WHERE liga_id = $1 AND equipo_id = $2
+`
+
+type RestarTablaParams struct {
+	LigaID            int32
+	EquipoID          int32
+	Puntos            sql.NullInt32
+	PartidosGanados   sql.NullInt32
+	PartidosEmpatados sql.NullInt32
+	PartidosPerdidos  sql.NullInt32
+}
+
+// deshace el efecto de un partido finalizado sobre la fila de un equipo
+func (q *Queries) RestarTabla(ctx context.Context, arg RestarTablaParams) error {
+	_, err := q.db.ExecContext(ctx, restarTabla,
+		arg.LigaID,
+		arg.EquipoID,
+		arg.Puntos,
+		arg.PartidosGanados,
+		arg.PartidosEmpatados,
+		arg.PartidosPerdidos,
+	)
+	return err
 }
 
 const updateEquipo = `-- name: UpdateEquipo :exec
