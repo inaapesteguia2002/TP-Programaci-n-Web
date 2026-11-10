@@ -144,18 +144,18 @@ templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, liga
 					<tr>
 						<th class="col-pos">#</th>
 						<th class="col-equipo">Equipo</th>
+						<th class="col-pts" title="Puntos">Pts</th>
 						<th class="col-stat" title="Partidos Jugados">PJ</th>
 						<th class="col-stat" title="Partidos Ganados">G</th>
 						<th class="col-stat" title="Partidos Empatados">E</th>
 						<th class="col-stat" title="Partidos Perdidos">P</th>
-						<th class="col-pts" title="Puntos">Pts</th>
 						<th class="col-accion">Acción</th>
 					</tr>
 				</thead>
 				<tbody>
 					if ligaSeleccionada == 0 {
 						<tr>
-							<td colspan="8" class="empty-msg">⚽ Seleccioná una liga arriba para visualizar la tabla de posiciones.</td>
+							<td colspan="8" class="empty-msg"> Seleccioná una liga arriba para visualizar la tabla de posiciones.</td>
 						</tr>
 					} else if len(tabla) == 0 {
 						<tr>
