@@ -10,9 +10,9 @@ templ Layout(title string) {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>{ title }</title>
-			<!-- Pico.css para el estilo minimalista -->
+			<!-- Pico.css para el estilo base -->
 			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
-			<!-- Tu hoja de estilos personalizada (cancha de fútbol) -->
+			<!-- Tu hoja de estilos personalizada -->
 			<link rel="stylesheet" href="/static/styles.css"/>
 		</head>
 		<body>
@@ -62,7 +62,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-ligas">
 			<article>
-				<header><strong> Ligas y Competiciones</strong></header>
+				<header><strong>🌍 Ligas y Competiciones</strong></header>
 				<div class="grid">
 					<div>@LigaForm()</div>
 					<div>@LigaList(ligas)</div>
@@ -72,7 +72,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-equipos">
 			<article>
-				<header><strong> Equipos</strong></header>
+				<header><strong>🛡️ Equipos</strong></header>
 				<div class="grid">
 					<div>@EquipoForm()</div>
 					<div>@EquipoList(equipos)</div>
@@ -82,7 +82,7 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 
 		<section id="seccion-partidos">
 			<article>
-				<header><strong> Partidos y Resultados</strong></header>
+				<header><strong>📅 Partidos y Resultados</strong></header>
 				if errorMsg != "" {
 					<p role="alert" style="background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px;">{ errorMsg }</p>
 				}
@@ -93,13 +93,13 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 			</article>
 		</section>
 
+		<!-- SECCIÓN TABLA A LO ANCHO -->
 		<section id="seccion-tabla">
 			<article>
-				<header><strong> Tabla de Posiciones</strong></header>
-				<div class="grid">
-					<div>@TablaForm(ligas, equipos)</div>
-					<div>@TablaList(ligas, tabla, ligaSeleccionada)</div>
-				</div>
+				<header><strong>🏆 Tabla de Posiciones</strong></header>
+				@TablaForm(ligas, equipos)
+				<hr/>
+				@TablaList(ligas, tabla, ligaSeleccionada)
 			</article>
 		</section>
 	}
