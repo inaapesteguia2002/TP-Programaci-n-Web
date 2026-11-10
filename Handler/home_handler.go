@@ -19,7 +19,7 @@ type HomeHandler struct {
 }
 
 // Index atiende GET /: obtiene todos los datos y renderiza la página principal.
-// La liga cuya tabla se muestra se elige con /?liga_id=N
+// Si viene error=mensaje, el mensaje se muestra en la sección de partidos.
 func (h *HomeHandler) Index(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -63,7 +63,10 @@ func (h *HomeHandler) Index(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := Views.IndexPage(ligas, equipos, partidos, tabla, ligaSeleccionada).Render(ctx, w); err != nil {
+	// Mensaje de error que dejó un handler al redirigir (vacío si no hay)
+	errorMsg := r.URL.Query().Get("error")
+
+	if err := Views.IndexPage(ligas, equipos, partidos, tabla, ligaSeleccionada, errorMsg).Render(ctx, w); err != nil {
 		log.Printf("renderizar index: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 	}

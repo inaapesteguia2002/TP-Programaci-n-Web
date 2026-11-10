@@ -22,7 +22,7 @@ templ Layout(title string) {
 }
 
 // Componente de página principal que une el Layout, los formularios y las listas
-templ IndexPage( ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []DataBase.Partido, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32,) {
+templ IndexPage( ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []DataBase.Partido, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32, errorMsg string) {
 	@Layout("De Rabona - Administración") {
 		<h1>Panel de Administración "De Rabona"</h1>
 
@@ -43,6 +43,9 @@ templ IndexPage( ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Da
 		<hr/>
 		<section id="seccion-partidos">
 			<h2>3. Partidos</h2>
+			if errorMsg != "" {
+				<p role="alert" style="background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px;">{ errorMsg }</p>
+			}
 			@PartidoForm(ligas, equipos)
 			@PartidoList(partidos, equipos)
 		</section>
