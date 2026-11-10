@@ -172,12 +172,12 @@ templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, liga
 								<td class="col-equipo">
 									<strong>{ pos.Equipo }</strong>
 								</td>
+								<td class="col-pts">
+									<span class="pts-pill">{ fmt.Sprintf("%d", pos.Puntos.Int32) }</span>
 								<td class="col-stat">{ fmt.Sprintf("%d", pos.PartidosJugados.Int32) }</td>
 								<td class="col-stat stat-g">{ fmt.Sprintf("%d", pos.PartidosGanados.Int32) }</td>
 								<td class="col-stat">{ fmt.Sprintf("%d", pos.PartidosEmpatados.Int32) }</td>
 								<td class="col-stat stat-p">{ fmt.Sprintf("%d", pos.PartidosPerdidos.Int32) }</td>
-								<td class="col-pts">
-									<span class="pts-pill">{ fmt.Sprintf("%d", pos.Puntos.Int32) }</span>
 								</td>
 								<td class="col-accion">
 									<form action="/tabla/eliminar" method="POST" style="margin:0;">
