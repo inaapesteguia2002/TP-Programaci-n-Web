@@ -131,7 +131,7 @@ templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, liga
 				<option value="">-- Seleccionar Liga para ver posiciones --</option>
 				for _, l := range ligas {
 					<option value={ fmt.Sprintf("%d", l.ID) } selected?={ l.ID == ligaSeleccionada }>
-						🏆 { l.Nombre } ({ l.Pais })
+						 { l.Nombre } ({ l.Pais })
 					</option>
 				}
 			</select>
