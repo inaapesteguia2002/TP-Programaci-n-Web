@@ -16,7 +16,6 @@ type PartidosService struct {
 // CreatePartido valida y guarda un nuevo partido.
 // Si el partido ya está finalizado, también actualiza la tabla de posiciones.
 func (s *PartidosService) CreatePartido(ctx context.Context, arg DataBase.CreatePartidoParams) (DataBase.Partido, error) {
-	// Regla de negocio: Un equipo no puede jugar contra sí mismo
 	if arg.EquipoLocalID == arg.EquipoVisitanteID {
 		return DataBase.Partido{}, errors.New("un equipo no puede jugar contra sí mismo")
 	}
