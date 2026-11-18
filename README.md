@@ -26,20 +26,39 @@ El sistema cumple estrictamente con la restricción de **cero archivos de JavaSc
 3. **Tabla de Posiciones (Inscripción y Consulta)**: Inscribir equipos en una liga (`hx-post="/tabla"`), consultar las posiciones de cualquier competición sin mover la pantalla (`hx-get="/"` hacia `#lista-tabla`) o quitar equipos de una liga (`hx-delete="/tabla/{liga_id}/{equipo_id}"`).
 4. **Partidos**: Registrar encuentros (`hx-post="/partidos"`) seleccionando la liga, equipo local, equipo visitante, goles y estado (`pendiente` o `finalizado`). Si el partido se registra como `finalizado`, el sistema actualiza automáticamente los partidos jugados, ganados, empatados, perdidos y puntos en la tabla de posiciones, o los revierte al borrar el partido (`hx-delete="/partidos/{id}"`).
 
-Instrucciones de ejecución
+## Instrucciones de ejecución
+
 Para probar la interfaz y el funcionamiento integral del sistema, sigue estos pasos:
 
-Clonar el repositorio y abrir una terminal en el directorio raíz. Posicionarse en la rama correspondiente a la entrega (tp5):
+
+
+**Clonar el repositorio** y abrir una terminal en el directorio raíz.
+**Posicionarse en la rama correspondiente a la entrega (`tp5`)**:
+```bash
 
 git fetch origin
 
 git checkout tp5
-Ejecutar el sistema mediante el Makefile:
+
+```
+
+3. **Ejecutar el sistema mediante el Makefile**:
+
 Este comando realiza automáticamente la limpieza de contenedores previos, levanta la base de datos, espera a que esté activa, ejecuta sqlc, compila los componentes de templ y levanta el servidor Go:
 
-make run-app
-Acceder a la Interfaz de Usuario:
-Abrir un navegador web. Ingresar a http://localhost:8080/ Desde el panel, podrás interactuar visualmente con las Ligas, Equipos, Partidos y la Tabla de Posiciones, reflejándose los cambios directamente en la base de datos.
+```bash
 
-Finalizar ejecución
+make run-app
+
+```
+
+4. **Acceder a la Interfaz de Usuario**:
+
+Abrir un navegador web.
+Ingresar a **`http://localhost:8080/`**
+Desde el panel, podrás interactuar visualmente con las Ligas, Equipos, Partidos y la Tabla de Posiciones, reflejándose los cambios directamente en la base de datos.
+
+
+5. **Finalizar ejecución**
+
 Presionar ctrl + C desde la consola.
