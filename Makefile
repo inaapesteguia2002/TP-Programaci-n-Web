@@ -1,81 +1,67 @@
 .PHONY: test test-api run-app
 
 test:
-	# 1. Limpieza de contenedores y volúmenes
-	docker compose down -v --remove-orphans || true
-
-	# 2. Generación de código Go con sqlc
-	sqlc generate
-	templ generate
-
-	# 3. Levantado contenedor de PostgreSQL
-	docker compose up -d postgresql
-
-	# 4. Espera activa a que PostgreSQL acepte conexiones
-	@until docker exec postgres_container pg_isready -U postgres > /dev/null 2>&1; do \
+	@set -e; \
+	trap 'echo "\nLimpiando contenedores..."; docker compose down -v --remove-orphans || true' EXIT INT TERM; \
+	echo "1. Limpieza inicial de contenedores y volúmenes..."; \
+	docker compose down -v --remove-orphans || true; \
+	echo "2. Generando código con sqlc y templ..."; \
+	sqlc generate; \
+	templ generate; \
+	echo "3. Levantando contenedor de PostgreSQL..."; \
+	docker compose up -d postgresql; \
+	echo "4. Esperando a que PostgreSQL acepte conexiones..."; \
+	until docker exec postgres_container pg_isready -U postgres > /dev/null 2>&1; do \
 		sleep 1; \
-	done
-
-	# 5. Ejecución de tests de Go
+	done; \
+	echo "5. Ejecutando tests de Go..."; \
 	go test -v ./...
 
-	# 6. Limpieza posterior
-	docker compose down -v
-
 test-api:
-	@echo "1.Tareas previas"
-	# 1. Limpieza previa de contenedores y volúmenes huérfanos
-	docker rm -f postgres_container 2>/dev/null || true
-	docker compose down -v --remove-orphans || true
-
-	# 2. Generación del código Go a partir de las consultas SQL con sqlc
-	sqlc generate
-	templ generate
-	
-	# 3. Levantamiento EXCLUSIVO de la base de datos primero
-	docker compose up -d postgresql
-	
-	# 4. Espera activa hasta que PostgreSQL acepte conexiones reales
-	@echo "Esperando a que PostgreSQL acepte conexiones"
-	@until docker exec postgres_container pg_isready -U postgres > /dev/null 2>&1; do \
+	@set -e; \
+	trap 'echo "\nLimpiando contenedores..."; docker compose down -v --remove-orphans || true' EXIT INT TERM; \
+	echo "1. Limpieza previa de contenedores y volúmenes..."; \
+	docker rm -f postgres_container 2>/dev/null || true; \
+	docker compose down -v --remove-orphans || true; \
+	echo "2. Generando código con sqlc y templ..."; \
+	sqlc generate; \
+	templ generate; \
+	echo "3. Levantando base de datos PostgreSQL..."; \
+	docker compose up -d postgresql; \
+	echo "4. Esperando a que PostgreSQL acepte conexiones..."; \
+	until docker exec postgres_container pg_isready -U postgres > /dev/null 2>&1; do \
 		sleep 1; \
-	done
-	
-	# 5. Ahora sí, levantamos la API sabiendo que la base está lista
-	@echo "Levantando la API de Go"
-	docker compose up -d --build api
-	
-	# 6. Espera inteligente para asegurar que el servidor HTTP esté escuchando (Máx 30s)
-	@echo "Esperando a que la API de Go responda"
-	@for i in $$(seq 1 15); do \
-		if curl -s http://localhost:8080 > /dev/null; then echo "¡API conectada y lista!"; break; fi; \
+	done; \
+	echo "5. Levantando el servidor web en Go..."; \
+	docker compose up -d --build api; \
+	echo "6. Esperando a que el servidor HTTP responda en http://localhost:8080..."; \
+	ready=0; \
+	for i in $$(seq 1 15); do \
+		if curl -s http://localhost:8080/ > /dev/null; then \
+			echo "¡Servidor conectado y listo!"; \
+			ready=1; \
+			break; \
+		fi; \
 		sleep 2; \
-	done
-
-	@echo "2) Prueba de los endpoints y 3) Limpieza Garantizada"
-	# 7. Ejecución de pruebas y 8. Limpieza final garantizada
-	@if hurl --test --continue-on-error requests.hurl; then \
-		echo "TODAS LAS PRUEBAS PASARON. Limpiando contenedores"; \
-		docker compose down -v; \
-	else \
-		echo "ALGUNAS PRUEBAS FALLARON. Limpiando contenedores de todas formas"; \
-		docker compose down -v; \
+	done; \
+	if [ "$$ready" -ne 1 ]; then \
+		echo "Error: El servidor no respondió a tiempo."; \
 		exit 1; \
-	fi
+	fi; \
+	echo "7. Ejecutando suite Hurl (recorrido HTML y formularios)..."; \
+	hurl --test requests.hurl
 
 run-app:
-	# 1. Tareas previas: limpieza y generación de código (sqlc + templ), levantar la base de datos y esperar a que esté lista
-	docker compose down -v --remove-orphans || true
-	sqlc generate
-	templ generate
-	docker compose up -d postgresql
-	@echo "Esperando a que PostgreSQL acepte conexiones..."
-	@until docker exec postgres_container pg_isready -U postgres > /dev/null 2>&1; do \
+	@set -e; \
+	trap 'echo "\nLimpiando contenedores..."; docker compose down -v --remove-orphans || true' EXIT INT TERM; \
+	echo "1. Preparando entorno (limpieza, sqlc, templ y PostgreSQL)..."; \
+	docker compose down -v --remove-orphans || true; \
+	sqlc generate; \
+	templ generate; \
+	docker compose up -d postgresql; \
+	echo "Esperando a que PostgreSQL acepte conexiones..."; \
+	until docker exec postgres_container pg_isready -U postgres > /dev/null 2>&1; do \
 		sleep 1; \
-	done
-
-	# 2 y 3. Ejecutar la aplicación y limpiar al apretar Ctrl+C
-	@echo "Arrancando la aplicación en http://localhost:8080/ (Ctrl+C para salir y limpiar)"
-	@trap 'echo "\nLimpiando contenedores..."; docker compose down -v' INT TERM EXIT; \
+	done; \
+	echo "2. Arrancando la aplicación en http://localhost:8080/ (Ctrl+C para salir y limpiar)"; \
 	go run main.go
-	
