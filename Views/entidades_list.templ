@@ -17,124 +17,170 @@ func nombreEquipo(equipos []DataBase.Equipo, id int32) string {
 
 // 1. LISTA DE LIGAS
 templ LigaList(ligas []DataBase.Liga) {
-	<figure>
-		<table>
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>Nombre</th>
-					<th>País</th>
-					<th>Acción</th>
-				</tr>
-			</thead>
-			<tbody>
-				if len(ligas) == 0 {
+	<div id="lista-ligas">
+		<figure>
+			<table>
+				<thead>
 					<tr>
-						<td colspan="4" class="empty-msg">No hay ligas registradas.</td>
+						<th>ID</th>
+						<th>Nombre</th>
+						<th>País</th>
+						<th>Acción</th>
 					</tr>
-				}
-				for _, l := range ligas {
-					<tr>
-						<td>{ fmt.Sprintf("%d", l.ID) }</td>
-						<td><strong>{ l.Nombre }</strong></td>
-						<td>{ l.Pais }</td>
-						<td>
-							<form action="/ligas/eliminar" method="POST" style="margin:0;">
-								<input type="hidden" name="id" value={ fmt.Sprintf("%d", l.ID) }/>
-								<button type="submit" class="secondary outline">Borrar</button>
-							</form>
-						</td>
-					</tr>
-				}
-			</tbody>
-		</table>
-	</figure>
+				</thead>
+				<tbody>
+					if len(ligas) == 0 {
+						<tr>
+							<td colspan="4" class="empty-msg">No hay ligas registradas.</td>
+						</tr>
+					}
+					for _, l := range ligas {
+						<tr>
+							<td>{ fmt.Sprintf("%d", l.ID) }</td>
+							<td><strong>{ l.Nombre }</strong></td>
+							<td>{ l.Pais }</td>
+							<td>
+								<button
+									type="button"
+									class="secondary outline"
+									hx-delete={ fmt.Sprintf("/ligas/%d", l.ID) }
+									hx-target="closest tr"
+									hx-swap="outerHTML"
+									hx-confirm="¿Estás seguro de que querés borrar esta liga?"
+								>
+									Borrar
+								</button>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</figure>
+	</div>
+}
+
+// Respuesta de creación de Liga + actualización OOB de los <select> de ligas
+templ LigaListConOOB(ligas []DataBase.Liga) {
+	@LigaList(ligas)
+	@SelectLigaPartido(ligas, true)
+	@SelectLigaTabla(ligas, true)
+	@SelectLigaFiltro(ligas, 0, true)
 }
 
 // 2. LISTA DE EQUIPOS
 templ EquipoList(equipos []DataBase.Equipo) {
-	<figure>
-		<table>
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>Nombre del Club</th>
-					<th>Acción</th>
-				</tr>
-			</thead>
-			<tbody>
-				if len(equipos) == 0 {
+	<div id="lista-equipos">
+		<figure>
+			<table>
+				<thead>
 					<tr>
-						<td colspan="3" class="empty-msg">No hay equipos registrados.</td>
+						<th>ID</th>
+						<th>Nombre del Club</th>
+						<th>Acción</th>
 					</tr>
-				}
-				for _, eq := range equipos {
-					<tr>
-						<td>{ fmt.Sprintf("%d", eq.ID) }</td>
-						<td><strong>{ eq.Nombre }</strong></td>
-						<td>
-							<form action="/equipos/eliminar" method="POST" style="margin:0;">
-								<input type="hidden" name="id" value={ fmt.Sprintf("%d", eq.ID) }/>
-								<button type="submit" class="secondary outline">Borrar</button>
-							</form>
-						</td>
-					</tr>
-				}
-			</tbody>
-		</table>
-	</figure>
+				</thead>
+				<tbody>
+					if len(equipos) == 0 {
+						<tr>
+							<td colspan="3" class="empty-msg">No hay equipos registrados.</td>
+						</tr>
+					}
+					for _, eq := range equipos {
+						<tr>
+							<td>{ fmt.Sprintf("%d", eq.ID) }</td>
+							<td><strong>{ eq.Nombre }</strong></td>
+							<td>
+								<button
+									type="button"
+									class="secondary outline"
+									hx-delete={ fmt.Sprintf("/equipos/%d", eq.ID) }
+									hx-target="closest tr"
+									hx-swap="outerHTML"
+									hx-confirm="¿Estás seguro de que querés borrar este equipo?"
+								>
+									Borrar
+								</button>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</figure>
+	</div>
+}
+
+// Respuesta de creación de Equipo + actualización OOB de los <select> de equipos
+templ EquipoListConOOB(equipos []DataBase.Equipo) {
+	@EquipoList(equipos)
+	@SelectEquipoLocal(equipos, true)
+	@SelectEquipoVisitante(equipos, true)
+	@SelectEquipoTabla(equipos, true)
 }
 
 // 3. LISTA DE PARTIDOS
 templ PartidoList(partidos []DataBase.Partido, equipos []DataBase.Equipo) {
-	<figure>
-		<table>
-			<thead>
-				<tr>
-					<th>Partido y Resultado</th>
-					<th>Estado</th>
-					<th>Acción</th>
-				</tr>
-			</thead>
-			<tbody>
-				if len(partidos) == 0 {
+	<div id="lista-partidos">
+		<figure>
+			<table>
+				<thead>
 					<tr>
-						<td colspan="3" class="empty-msg">No hay partidos registrados.</td>
+						<th>Partido y Resultado</th>
+						<th>Estado</th>
+						<th>Acción</th>
 					</tr>
-				}
-				for _, p := range partidos {
-					<tr>
-						<td>
-							<strong>{ nombreEquipo(equipos, p.EquipoLocalID) }</strong>
-							{ fmt.Sprintf(" %d - %d ", p.GolesLocal.Int32, p.GolesVisitante.Int32) }
-							<strong>{ nombreEquipo(equipos, p.EquipoVisitanteID) }</strong>
-						</td>
-						<td><mark>{ p.Estado.String }</mark></td>
-						<td>
-							<form action="/partidos/eliminar" method="POST" style="margin:0;">
-								<input type="hidden" name="id" value={ fmt.Sprintf("%d", p.ID) }/>
-								<button type="submit" class="secondary outline">Borrar</button>
-							</form>
-						</td>
-					</tr>
-				}
-			</tbody>
-		</table>
-	</figure>
+				</thead>
+				<tbody>
+					if len(partidos) == 0 {
+						<tr>
+							<td colspan="3" class="empty-msg">No hay partidos registrados.</td>
+						</tr>
+					}
+					for _, p := range partidos {
+						<tr>
+							<td>
+								<strong>{ nombreEquipo(equipos, p.EquipoLocalID) }</strong>
+								{ fmt.Sprintf(" %d - %d ", p.GolesLocal.Int32, p.GolesVisitante.Int32) }
+								<strong>{ nombreEquipo(equipos, p.EquipoVisitanteID) }</strong>
+							</td>
+							<td><mark>{ p.Estado.String }</mark></td>
+							<td>
+								<button
+									type="button"
+									class="secondary outline"
+									hx-delete={ fmt.Sprintf("/partidos/%d", p.ID) }
+									hx-target="closest tr"
+									hx-swap="outerHTML"
+									hx-confirm="¿Estás seguro de que querés borrar este partido?"
+								>
+									Borrar
+								</button>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</figure>
+	</div>
+}
+
+// Respuesta de PartidoList + mensaje de error OOB (limpia o muestra alerta sin recargar)
+templ PartidoListConEstado(partidos []DataBase.Partido, equipos []DataBase.Equipo, errorMsg string) {
+	@PartidoList(partidos, equipos)
+	@AlertaErrorPartidos(errorMsg, true)
 }
 
 // 4. TABLA DE POSICIONES PROLIJA A LO ANCHO
 templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32) {
-	<div>
-		<form action="/#seccion-tabla" method="GET" class="selector-liga-form">
-			<select name="liga_id" required>
-				<option value="">-- Seleccionar Liga para ver posiciones --</option>
-				for _, l := range ligas {
-					<option value={ fmt.Sprintf("%d", l.ID) } selected?={ l.ID == ligaSeleccionada }>
-						 { l.Nombre } ({ l.Pais })
-					</option>
-				}
-			</select>
+	<div id="lista-tabla">
+		<form
+			action="/#seccion-tabla"
+			method="GET"
+			hx-get="/"
+			hx-target="#lista-tabla"
+			hx-swap="outerHTML"
+			class="selector-liga-form"
+		>
+			@SelectLigaFiltro(ligas, ligaSeleccionada, false)
 			<button type="submit" class="contrast">Ver Tabla</button>
 		</form>
 
@@ -155,7 +201,7 @@ templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, liga
 				<tbody>
 					if ligaSeleccionada == 0 {
 						<tr>
-							<td colspan="8" class="empty-msg"> Seleccioná una liga arriba para visualizar la tabla de posiciones.</td>
+							<td colspan="8" class="empty-msg">Seleccioná una liga arriba para visualizar la tabla de posiciones.</td>
 						</tr>
 					} else if len(tabla) == 0 {
 						<tr>
@@ -174,17 +220,23 @@ templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, liga
 								</td>
 								<td class="col-pts">
 									<span class="pts-pill">{ fmt.Sprintf("%d", pos.Puntos.Int32) }</span>
+								</td>
 								<td class="col-stat">{ fmt.Sprintf("%d", pos.PartidosJugados.Int32) }</td>
 								<td class="col-stat stat-g">{ fmt.Sprintf("%d", pos.PartidosGanados.Int32) }</td>
 								<td class="col-stat">{ fmt.Sprintf("%d", pos.PartidosEmpatados.Int32) }</td>
 								<td class="col-stat stat-p">{ fmt.Sprintf("%d", pos.PartidosPerdidos.Int32) }</td>
-								</td>
 								<td class="col-accion">
-									<form action="/tabla/eliminar" method="POST" style="margin:0;">
-										<input type="hidden" name="liga_id" value={ fmt.Sprintf("%d", pos.LigaID) }/>
-										<input type="hidden" name="equipo_id" value={ fmt.Sprintf("%d", pos.EquipoID) }/>
-										<button type="submit" class="secondary outline" title="Quitar de la liga">Sacar</button>
-									</form>
+									<button
+										type="button"
+										class="secondary outline"
+										title="Quitar de la liga"
+										hx-delete={ fmt.Sprintf("/tabla/%d/%d", pos.LigaID, pos.EquipoID) }
+										hx-target="closest tr"
+										hx-swap="outerHTML"
+										hx-confirm="¿Estás seguro de que querés sacar a este equipo de la liga?"
+									>
+										Sacar
+									</button>
 								</td>
 							</tr>
 						}
