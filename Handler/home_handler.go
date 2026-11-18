@@ -18,28 +18,14 @@ type HomeHandler struct {
 	Tabla    *Logic.TablaService
 }
 
-// Index atiende GET /: obtiene todos los datos y renderiza la página principal.
-// Si viene error=mensaje, el mensaje se muestra en la sección de partidos.
+// Index atiende GET /: si es una petición parcial de HTMX para filtrar la tabla,
+// devuelve solo el fragmento TablaList; de lo contrario, renderiza la página completa.
 func (h *HomeHandler) Index(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	ligas, err := h.Ligas.ListLigas(ctx)
 	if err != nil {
 		log.Printf("listar ligas: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	equipos, err := h.Equipos.ListEquipos(ctx)
-	if err != nil {
-		log.Printf("listar equipos: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	partidos, err := h.Partidos.ListPartidos(ctx)
-	if err != nil {
-		log.Printf("listar partidos: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -63,7 +49,29 @@ func (h *HomeHandler) Index(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Mensaje de error que dejó un handler al redirigir (vacío si no hay)
+	// Si la petición proviene del selector de liga con HTMX, devolvemos solo el fragmento de la tabla
+	if r.Header.Get("HX-Request") == "true" {
+		if err := Views.TablaList(ligas, tabla, ligaSeleccionada).Render(ctx, w); err != nil {
+			log.Printf("renderizar fragmento tabla: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	equipos, err := h.Equipos.ListEquipos(ctx)
+	if err != nil {
+		log.Printf("listar equipos: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	partidos, err := h.Partidos.ListPartidos(ctx)
+	if err != nil {
+		log.Printf("listar partidos: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
 	errorMsg := r.URL.Query().Get("error")
 
 	if err := Views.IndexPage(ligas, equipos, partidos, tabla, ligaSeleccionada, errorMsg).Render(ctx, w); err != nil {
