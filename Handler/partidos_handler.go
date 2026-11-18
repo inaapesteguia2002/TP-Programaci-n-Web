@@ -5,27 +5,50 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"net/url"
 	"strconv"
 
 	"DeRabona/DataBase"
 	"DeRabona/Logic"
+	"DeRabona/Views"
 )
 
 type PartidosHandler struct {
 	Service *Logic.PartidosService
+	Equipos *Logic.EquiposService
 }
 
-// errorEnForm vuelve a la página principal (sección partidos) mostrando el mensaje en la propia interfaz, en vez de mostrar una página de error aparte.
-func errorEnForm(w http.ResponseWriter, r *http.Request, msg string) {
-	http.Redirect(w, r, "/?error="+url.QueryEscape(msg)+"#seccion-partidos", http.StatusSeeOther)
+// renderPartidos devuelve el fragmento actualizado de la lista de partidos junto con el estado de error (si lo hubiera).
+func (h *PartidosHandler) renderPartidos(w http.ResponseWriter, r *http.Request, errorMsg string) {
+	ctx := r.Context()
+
+	partidos, err := h.Service.ListPartidos(ctx)
+	if err != nil {
+		log.Printf("listar partidos: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	var equipos []DataBase.Equipo
+	if h.Equipos != nil {
+		equipos, err = h.Equipos.ListEquipos(ctx)
+		if err != nil {
+			log.Printf("listar equipos para partidos: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if err := Views.PartidoListConEstado(partidos, equipos, errorMsg).Render(ctx, w); err != nil {
+		log.Printf("renderizar PartidoList: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
 }
 
-// Create atiende POST /partidos: parsea y valida el formulario, guarda el partido
-// y redirige a la página principal (patrón Post/Redirect/Get).
+// Create atiende POST /partidos: valida y guarda el partido, vuelve a consultar la lista
+// y devuelve únicamente el fragmento de la lista de partidos para HTMX.
 func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
-		errorEnForm(w, r, "formulario inválido")
+		http.Error(w, "formulario inválido", http.StatusBadRequest)
 		return
 	}
 
@@ -36,20 +59,20 @@ func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 	golesVisitante, err5 := strconv.Atoi(r.FormValue("goles_visitante"))
 	estado := r.FormValue("estado")
 
-	if err1 != nil || err2 != nil || err3 != nil || err4 != nil || err5 != nil {
-		errorEnForm(w, r, "los datos del partido no son válidos")
+	if err1 != nil || err2 != nil || err3 != nil || err4 != nil || err5 != nil || ligaID <= 0 || localID <= 0 || visitanteID <= 0 {
+		h.renderPartidos(w, r, "los datos del partido no son válidos")
 		return
 	}
 	if golesLocal < 0 || golesVisitante < 0 {
-		errorEnForm(w, r, "los goles no pueden ser negativos")
+		h.renderPartidos(w, r, "los goles no pueden ser negativos")
 		return
 	}
 	if localID == visitanteID {
-		errorEnForm(w, r, "un equipo no puede jugar contra sí mismo")
+		h.renderPartidos(w, r, "un equipo no puede jugar contra sí mismo")
 		return
 	}
 	if estado != "pendiente" && estado != "finalizado" {
-		errorEnForm(w, r, "estado inválido")
+		h.renderPartidos(w, r, "estado inválido")
 		return
 	}
 
@@ -63,10 +86,8 @@ func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := h.Service.CreatePartido(r.Context(), arg); err != nil {
-
-		// Regla de negocio: los dos equipos tienen que estar inscriptos en la liga
 		if errors.Is(err, Logic.ErrEquipoFueraDeLiga) {
-			errorEnForm(w, r, err.Error())
+			h.renderPartidos(w, r, err.Error())
 			return
 		}
 		log.Printf("crear partido: %v", err)
@@ -74,19 +95,27 @@ func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	h.renderPartidos(w, r, "")
 }
 
+// Delete atiende DELETE /partidos/{id}: obtiene el ID de la URL, elimina el partido
+// y devuelve una respuesta vacía con 200 OK para que HTMX quite la fila del DOM.
 func (h *PartidosHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.FormValue("id"))
+	idStr := r.PathValue("id")
+	if idStr == "" {
+		idStr = r.FormValue("id")
+	}
+	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
 		http.Error(w, "id inválido", http.StatusBadRequest)
 		return
 	}
+
 	if err := h.Service.DeletePartido(r.Context(), int32(id)); err != nil {
 		log.Printf("eliminar partido: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+
+	w.WriteHeader(http.StatusOK)
 }
