@@ -6,6 +6,8 @@ HTTP 200
 header "Content-Type" contains "text/html"
 body contains "De Rabona"
 body contains "<form"
+body contains "No hay ligas registradas."
+body contains "No hay equipos registrados."
 
 
 # 2. GESTIÓN DE LIGAS (FORMULARIO CLÁSICO + PRG)
@@ -26,12 +28,12 @@ HTTP 303
 [Asserts]
 header "Location" contains "/"
 
-# [GET] Verificar que la liga aparece listada en el HTML de la página principal
+# [GET] Verificar que la liga aparece en la tabla HTML
 GET http://localhost:8080/
 HTTP 200
 [Asserts]
-body contains "Liga Profesional"
-body contains "Argentina"
+body contains "<strong>Liga Profesional</strong>"
+body contains "<td>Argentina</td>"
 
 
 # 3. GESTIÓN DE EQUIPOS (FORMULARIO CLÁSICO + PRG)
@@ -58,12 +60,12 @@ HTTP 303
 [Asserts]
 header "Location" contains "/"
 
-# [GET] Verificar que ambos equipos se renderizan en el listado HTML
+# [GET] Verificar que ambos equipos se renderizan en las filas de la tabla HTML
 GET http://localhost:8080/
 HTTP 200
 [Asserts]
-body contains "Boca Juniors"
-body contains "River Plate"
+body contains "<strong>Boca Juniors</strong>"
+body contains "<strong>River Plate</strong>"
 
 
 # 4. INSCRIPCIÓN EN TABLA DE POSICIONES (FORMULARIO CLÁSICO + PRG)
@@ -94,11 +96,11 @@ header "Location" contains "/"
 GET http://localhost:8080/?liga_id=1
 HTTP 200
 [Asserts]
-body contains "Boca Juniors"
-body contains "River Plate"
+body contains "<strong>Boca Juniors</strong>"
+body contains "<strong>River Plate</strong>"
 
 
-# 5. GESTION DE PARTIDOS Y CALCULO DE PUNTOS EN TABLA
+# 5. GESTIÓN DE PARTIDOS Y CÁLCULO DE PUNTOS EN TABLA
 
 # [POST] Registrar un partido finalizado (Boca Juniors 2 - 0 River Plate)
 POST http://localhost:8080/partidos
@@ -118,7 +120,7 @@ GET http://localhost:8080/?liga_id=1
 HTTP 200
 [Asserts]
 body contains "2 - 0"
-body contains "finalizado"
+body contains "<mark>finalizado</mark>"
 
 
 # 6. ELIMINACIÓN VIA FORMULARIOS POST Y VERIFICACIÓN HTML
@@ -161,10 +163,14 @@ POST http://localhost:8080/ligas/eliminar
 id: 1
 HTTP 303
 
-# 5. Comprobar en el HTML principal que los registros fueron eliminados
+# 5. Comprobar en el HTML principal que las tablas volvieron a quedar vacías
 GET http://localhost:8080/
 HTTP 200
 [Asserts]
-body not contains "Liga Profesional"
-body not contains "Boca Juniors"
-body not contains "River Plate"
+body not contains "<strong>Liga Profesional</strong>"
+body not contains "<strong>Boca Juniors</strong>"
+body not contains "<strong>River Plate</strong>"
+body contains "No hay ligas registradas."
+body contains "No hay equipos registradas." == false
+body contains "No hay equipos registrados."
+body contains "No hay partidos registrados."
