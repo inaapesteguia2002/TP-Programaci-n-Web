@@ -1,226 +1,170 @@
-# ==========================================
-# 1. GESTIÓN DE EQUIPOS
-# ==========================================
+# 1. CARGA INICIAL DE LA PÁGINA PRINCIPAL (SSR HTML)
 
-# [ERROR] Intentar crear equipo con nombre vacío (400 Bad Request)
-POST http://localhost:8080/equipos
-{
-  "nombre": ""
-}
-HTTP 400
-
-# [POST] Crear el equipo local (ID 1)
-POST http://localhost:8080/equipos
-{
-  "nombre": "Boca"
-}
-HTTP 201
-[Asserts]
-jsonpath "$.ID" == 1
-jsonpath "$.Nombre" == "Boca"
-
-# [PUT] Actualizar el equipo 1 y comprobar que devuelve el objeto actualizado
-PUT http://localhost:8080/equipos/1
-{
-  "nombre": "Boca Juniors"
-}
+GET http://localhost:8080/
 HTTP 200
 [Asserts]
-jsonpath "$.id" == 1
-jsonpath "$.nombre" == "Boca Juniors"
-
-# [POST] Crear el equipo visitante (ID 2)
-POST http://localhost:8080/equipos
-{
-  "nombre": "River Plate"
-}
-HTTP 201
-[Asserts]
-jsonpath "$.ID" == 2
-jsonpath "$.Nombre" == "River Plate"
-
-# [GET] Obtener equipo por ID
-GET http://localhost:8080/equipos/1
-HTTP 200
-[Asserts]
-jsonpath "$.Nombre" == "Boca Juniors"
-
-# [GET] Listar todos los equipos
-GET http://localhost:8080/equipos
-HTTP 200
-[Asserts]
-jsonpath "$" count == 2
+header "Content-Type" contains "text/html"
+body contains "De Rabona"
+body contains "<form"
 
 
-# ==========================================
-# 2. GESTIÓN DE LIGAS
-# ==========================================
+# 2. GESTIÓN DE LIGAS (FORMULARIO CLÁSICO + PRG)
 
-# [ERROR] Intentar crear liga sin país (400 Bad Request)
+# [ERROR] Intentar crear liga con datos vacíos
 POST http://localhost:8080/ligas
-{
-  "nombre": "Liga Incompleta",
-  "pais": ""
-}
+[FormParams]
+nombre: Liga Incompleta
+pais: 
 HTTP 400
 
-# [POST] Crear una liga (ID 1)
+# [POST] Crear Liga 1 vía formulario y verificar redirección PRG (303 See Other)
 POST http://localhost:8080/ligas
-{
-  "nombre": "Primera División",
-  "pais": "Argentina"
-}
-HTTP 201
+[FormParams]
+nombre: Liga Profesional
+pais: Argentina
+HTTP 303
 [Asserts]
-jsonpath "$.ID" == 1
-jsonpath "$.Nombre" == "Primera División"
+header "Location" contains "/"
 
-# [PUT] Actualizar liga 1 y comprobar objeto devuelto
-PUT http://localhost:8080/ligas/1
-{
-  "nombre": "Liga Profesional",
-  "pais": "Argentina"
-}
+# [GET] Verificar que la liga aparece listada en el HTML de la página principal
+GET http://localhost:8080/
 HTTP 200
 [Asserts]
-jsonpath "$.id" == 1
-jsonpath "$.nombre" == "Liga Profesional"
-jsonpath "$.pais" == "Argentina"
-
-# [GET] Listar ligas
-GET http://localhost:8080/ligas
-HTTP 200
-[Asserts]
-jsonpath "$" count == 1
+body contains "Liga Profesional"
+body contains "Argentina"
 
 
-# ==========================================
-# 3. GESTIÓN DE PARTIDOS
-# ==========================================
+# 3. GESTIÓN DE EQUIPOS (FORMULARIO CLÁSICO + PRG)
 
-# [ERROR] Intentar crear partido con IDs inválidos (400 Bad Request)
-POST http://localhost:8080/partidos
-{
-  "liga_id": 0,
-  "equipo_local_id": 1,
-  "equipo_visitante_id": 2
-}
+# [ERROR] Intentar crear equipo con nombre vacío
+POST http://localhost:8080/equipos
+[FormParams]
+nombre: 
 HTTP 400
 
-# [POST] Registrar un partido (ID 1)
-POST http://localhost:8080/partidos
-{
-  "liga_id": 1,
-  "equipo_local_id": 1,
-  "equipo_visitante_id": 2,
-  "goles_local": 0,
-  "goles_visitante": 0,
-  "estado": "pendiente"
-}
-HTTP 201
+# [POST] Crear Equipo 1 (Boca Juniors)
+POST http://localhost:8080/equipos
+[FormParams]
+nombre: Boca Juniors
+HTTP 303
 [Asserts]
-jsonpath "$.ID" == 1
+header "Location" contains "/"
 
-# [PUT] Actualizar resultado del partido y comprobar objeto devuelto
-PUT http://localhost:8080/partidos/1
-{
-  "goles_local": 2,
-  "goles_visitante": 0,
-  "estado": "finalizado"
-}
+# [POST] Crear Equipo 2 (River Plate)
+POST http://localhost:8080/equipos
+[FormParams]
+nombre: River Plate
+HTTP 303
+[Asserts]
+header "Location" contains "/"
+
+# [GET] Verificar que ambos equipos se renderizan en el listado HTML
+GET http://localhost:8080/
 HTTP 200
 [Asserts]
-jsonpath "$.id" == 1
-jsonpath "$.goles_local" == 2
-jsonpath "$.goles_visitante" == 0
-jsonpath "$.estado" == "finalizado"
-
-# [GET] Listar partidos
-GET http://localhost:8080/partidos
-HTTP 200
-[Asserts]
-jsonpath "$" count == 1
+body contains "Boca Juniors"
+body contains "River Plate"
 
 
-# ==========================================
-# 4. TABLA DE POSICIONES
-# ==========================================
+# 4. INSCRIPCIÓN EN TABLA DE POSICIONES (FORMULARIO CLÁSICO + PRG)
 
-# [ERROR] Intentar registrar en tabla con IDs inválidos (400 Bad Request)
-POST http://localhost:8080/tabla
-{
-  "liga_id": 0,
-  "equipo_id": 1
-}
+# [ERROR] Consultar tabla con liga_id inválido en query param
+GET http://localhost:8080/?liga_id=invalido
 HTTP 400
 
-# [POST] Registrar equipo 1 en la tabla de la liga 1
+# [POST] Inscribir Equipo 1 en la Liga 1
 POST http://localhost:8080/tabla
-{
-  "liga_id": 1,
-  "equipo_id": 1
-}
-HTTP 201
+[FormParams]
+liga_id: 1
+equipo_id: 1
+HTTP 303
 [Asserts]
-jsonpath "$.LigaID" == 1
-jsonpath "$.EquipoID" == 1
+header "Location" contains "/"
 
-# [PUT] Actualizar estadísticas en la tabla y comprobar objeto devuelto
-PUT http://localhost:8080/tabla
-{
-  "liga_id": 1,
-  "equipo_id": 1,
-  "puntos": 3,
-  "partidos_ganados": 1,
-  "partidos_empatados": 0,
-  "partidos_perdidos": 0
-}
+# [POST] Inscribir Equipo 2 en la Liga 1
+POST http://localhost:8080/tabla
+[FormParams]
+liga_id: 1
+equipo_id: 2
+HTTP 303
+[Asserts]
+header "Location" contains "/"
+
+# [GET] Consultar la tabla de posiciones de la Liga 1 en el HTML
+GET http://localhost:8080/?liga_id=1
 HTTP 200
 [Asserts]
-jsonpath "$.liga_id" == 1
-jsonpath "$.equipo_id" == 1
-jsonpath "$.puntos" == 3
-jsonpath "$.partidos_ganados" == 1
+body contains "Boca Juniors"
+body contains "River Plate"
 
-# [GET] Consultar la tabla de posiciones de la liga 1
-GET http://localhost:8080/tabla/1
+
+# 5. GESTION DE PARTIDOS Y CALCULO DE PUNTOS EN TABLA
+
+# [POST] Registrar un partido finalizado (Boca Juniors 2 - 0 River Plate)
+POST http://localhost:8080/partidos
+[FormParams]
+liga_id: 1
+equipo_local_id: 1
+equipo_visitante_id: 2
+goles_local: 2
+goles_visitante: 0
+estado: finalizado
+HTTP 303
+[Asserts]
+header "Location" contains "/"
+
+# [GET] Verificar que el partido y su estado aparecen en la página principal
+GET http://localhost:8080/?liga_id=1
 HTTP 200
 [Asserts]
-jsonpath "$" count == 1
+body contains "2 - 0"
+body contains "finalizado"
 
 
-# ==========================================
-# 5. ELIMINACIÓN (DELETE) Y COMPROBACIÓN 404
-# ==========================================
+# 6. ELIMINACIÓN VIA FORMULARIOS POST Y VERIFICACIÓN HTML
 
-# 1. Eliminar equipo de la tabla de posiciones
-DELETE http://localhost:8080/tabla
-{
-  "liga_id": 1,
-  "equipo_id": 1
-}
-HTTP 204
+# 1. Eliminar el partido creado
+POST http://localhost:8080/partidos/eliminar
+[FormParams]
+id: 1
+HTTP 303
+[Asserts]
+header "Location" contains "/"
 
-# 2. Eliminar el partido 1
-DELETE http://localhost:8080/partidos/1
-HTTP 204
+# 2. Sacar a los equipos de la tabla de posiciones
+POST http://localhost:8080/tabla/eliminar
+[FormParams]
+liga_id: 1
+equipo_id: 1
+HTTP 303
 
-# Comprobar que el partido ya no existe (404 Not Found)
-GET http://localhost:8080/partidos/1
-HTTP 404
+POST http://localhost:8080/tabla/eliminar
+[FormParams]
+liga_id: 1
+equipo_id: 2
+HTTP 303
 
-# 3. Eliminar la liga 1
-DELETE http://localhost:8080/ligas/1
-HTTP 204
+# 3. Eliminar los equipos
+POST http://localhost:8080/equipos/eliminar
+[FormParams]
+id: 1
+HTTP 303
 
-# Comprobar que la liga ya no existe (404 Not Found)
-GET http://localhost:8080/ligas/1
-HTTP 404
+POST http://localhost:8080/equipos/eliminar
+[FormParams]
+id: 2
+HTTP 303
 
-# 4. Eliminar el equipo 1
-DELETE http://localhost:8080/equipos/1
-HTTP 204
+# 4. Eliminar la liga
+POST http://localhost:8080/ligas/eliminar
+[FormParams]
+id: 1
+HTTP 303
 
-# Comprobar que el equipo ya no existe (404 Not Found)
-GET http://localhost:8080/equipos/1
-HTTP 404
+# 5. Comprobar en el HTML principal que los registros fueron eliminados
+GET http://localhost:8080/
+HTTP 200
+[Asserts]
+body not contains "Liga Profesional"
+body not contains "Boca Juniors"
+body not contains "River Plate"
