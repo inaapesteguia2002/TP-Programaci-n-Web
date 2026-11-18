@@ -43,7 +43,7 @@ func Layout(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><!-- Pico.css para el estilo base --><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"><!-- Tu hoja de estilos personalizada --><link rel=\"stylesheet\" href=\"/static/styles.css\"></head><body><!-- ÍNDICE DE NAVEGACIÓN FIJO ARRIBA --><div class=\"navbar-sticky\"><nav class=\"container\"><ul><li><strong>⚽ De Rabona</strong></li></ul><ul><li><a href=\"#seccion-ligas\">Ligas</a></li><li><a href=\"#seccion-equipos\">Equipos</a></li><li><a href=\"#seccion-partidos\">Partidos</a></li><li><a href=\"#seccion-tabla\">Posiciones</a></li></ul></nav></div><main class=\"container\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</title><!-- Pico.css para el estilo base --><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css\"><!-- Tu hoja de estilos personalizada --><link rel=\"stylesheet\" href=\"/static/styles.css\"><!-- HTMX para interactividad sin recarga de página --><script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js\"></script></head><body><!-- ÍNDICE DE NAVEGACIÓN FIJO ARRIBA --><div class=\"navbar-sticky\"><nav class=\"container\"><ul><li><strong>⚽ De Rabona</strong></li></ul><ul><li><a href=\"#seccion-ligas\">Ligas</a></li><li><a href=\"#seccion-equipos\">Equipos</a></li><li><a href=\"#seccion-partidos\">Partidos</a></li><li><a href=\"#seccion-tabla\">Posiciones</a></li></ul></nav></div><main class=\"container\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -101,7 +101,7 @@ func IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Data
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(errorMsg)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `Views/layout.templ`, Line: 59, Col: 42}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `Views/layout.templ`, Line: 61, Col: 42}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -148,26 +148,11 @@ func IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Data
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if errorMsg != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<p role=\"alert\" style=\"background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px;\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var6 string
-				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(errorMsg)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `Views/layout.templ`, Line: 87, Col: 151}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</p>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
+			templ_7745c5c3_Err = AlertaErrorPartidos(errorMsg, false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"grid\"><div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<div class=\"grid\"><div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -175,7 +160,7 @@ func IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Data
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div><div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div><div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -183,7 +168,7 @@ func IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Data
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div></div></article></section><!-- SECCIÓN TABLA A LO ANCHO --> <section id=\"seccion-tabla\"><article><header><strong>Tabla de Posiciones</strong></header>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</div></div></article></section><!-- SECCIÓN TABLA A LO ANCHO --> <section id=\"seccion-tabla\"><article><header><strong>Tabla de Posiciones</strong></header>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -191,7 +176,7 @@ func IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Data
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<hr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<hr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -199,7 +184,7 @@ func IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Data
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</article></section>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</article></section>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
