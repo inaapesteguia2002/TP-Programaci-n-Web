@@ -1,5 +1,4 @@
 .PHONY: test test-api run-app
-.ONESHELL:
 
 test:
 	@set -e
