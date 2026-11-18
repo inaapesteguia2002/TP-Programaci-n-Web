@@ -1,16 +1,17 @@
-# 1. CARGA INICIAL DE LA PÁGINA PRINCIPAL (SSR HTML)
+# 1. CARGA INICIAL DE LA PÁGINA PRINCIPAL (SSR HTML + HTMX)
 
 GET http://localhost:8080/
 HTTP 200
 [Asserts]
 header "Content-Type" contains "text/html"
 body contains "De Rabona"
-body contains "<form"
+body contains "htmx.min.js"
+body contains "hx-post=\"/ligas\""
 body contains "No hay ligas registradas."
 body contains "No hay equipos registrados."
 
 
-# 2. GESTIÓN DE LIGAS (FORMULARIO CLÁSICO + PRG)
+# 2. GESTIÓN DE LIGAS (CREACIÓN SIN RECARGA -> FRAGMENTO HTML + OOB)
 
 # [ERROR] Intentar crear liga con datos vacíos
 POST http://localhost:8080/ligas
@@ -19,24 +20,22 @@ nombre: Liga Incompleta
 pais: 
 HTTP 400
 
-# [POST] Crear Liga 1 vía formulario y verificar redirección PRG (303 See Other)
+# [POST] Crear Liga 1 y verificar que devuelve solo el fragmento HTML (200 OK)
 POST http://localhost:8080/ligas
 [FormParams]
 nombre: Liga Profesional
 pais: Argentina
-HTTP 303
-[Asserts]
-header "Location" contains "/"
-
-# [GET] Verificar que la liga aparece en la tabla HTML
-GET http://localhost:8080/
 HTTP 200
 [Asserts]
+body contains "id=\"lista-ligas\""
 body contains "<strong>Liga Profesional</strong>"
 body contains "<td>Argentina</td>"
+body contains "hx-delete=\"/ligas/1\""
+body contains "hx-swap-oob=\"true\""
+body not contains "<!doctype html>"
 
 
-# 3. GESTIÓN DE EQUIPOS (FORMULARIO CLÁSICO + PRG)
+# 3. GESTIÓN DE EQUIPOS (CREACIÓN SIN RECARGA -> FRAGMENTO HTML + OOB)
 
 # [ERROR] Intentar crear equipo con nombre vacío
 POST http://localhost:8080/equipos
@@ -44,63 +43,60 @@ POST http://localhost:8080/equipos
 nombre: 
 HTTP 400
 
-# [POST] Crear Equipo 1 (Boca Juniors)
+# [POST] Crear Equipo 1 (Boca Juniors) y verificar fragmento de lista
 POST http://localhost:8080/equipos
 [FormParams]
 nombre: Boca Juniors
-HTTP 303
+HTTP 200
 [Asserts]
-header "Location" contains "/"
+body contains "id=\"lista-equipos\""
+body contains "<strong>Boca Juniors</strong>"
+body contains "hx-delete=\"/equipos/1\""
+body contains "hx-swap-oob=\"true\""
+body not contains "<!doctype html>"
 
-# [POST] Crear Equipo 2 (River Plate)
+# [POST] Crear Equipo 2 (River Plate) y verificar que ambos están en el fragmento
 POST http://localhost:8080/equipos
 [FormParams]
 nombre: River Plate
-HTTP 303
-[Asserts]
-header "Location" contains "/"
-
-# [GET] Verificar que ambos equipos se renderizan en las filas de la tabla HTML
-GET http://localhost:8080/
 HTTP 200
 [Asserts]
+body contains "id=\"lista-equipos\""
 body contains "<strong>Boca Juniors</strong>"
 body contains "<strong>River Plate</strong>"
+body contains "hx-delete=\"/equipos/2\""
 
 
-# 4. INSCRIPCIÓN EN TABLA DE POSICIONES (FORMULARIO CLÁSICO + PRG)
+# 4. INSCRIPCIÓN EN TABLA DE POSICIONES (FRAGMENTO HTML)
 
 # [ERROR] Consultar tabla con liga_id inválido en query param
 GET http://localhost:8080/?liga_id=invalido
 HTTP 400
 
-# [POST] Inscribir Equipo 1 en la Liga 1
+# [POST] Inscribir Equipo 1 en la Liga 1 (devuelve fragmento #lista-tabla actualizado)
 POST http://localhost:8080/tabla
 [FormParams]
 liga_id: 1
 equipo_id: 1
-HTTP 303
+HTTP 200
 [Asserts]
-header "Location" contains "/"
+body contains "id=\"lista-tabla\""
+body contains "<strong>Boca Juniors</strong>"
+body not contains "<!doctype html>"
 
-# [POST] Inscribir Equipo 2 en la Liga 1
+# [POST] Inscribir Equipo 2 en la Liga 1 (devuelve fragmento con ambos equipos)
 POST http://localhost:8080/tabla
 [FormParams]
 liga_id: 1
 equipo_id: 2
-HTTP 303
-[Asserts]
-header "Location" contains "/"
-
-# [GET] Consultar la tabla de posiciones de la Liga 1 en el HTML
-GET http://localhost:8080/?liga_id=1
 HTTP 200
 [Asserts]
+body contains "id=\"lista-tabla\""
 body contains "<strong>Boca Juniors</strong>"
 body contains "<strong>River Plate</strong>"
 
 
-# 5. GESTIÓN DE PARTIDOS Y CÁLCULO DE PUNTOS EN TABLA
+# 5. GESTIÓN DE PARTIDOS Y CONSULTA PARCIAL DE TABLA CON HTMX
 
 # [POST] Registrar un partido finalizado (Boca Juniors 2 - 0 River Plate)
 POST http://localhost:8080/partidos
@@ -111,59 +107,64 @@ equipo_visitante_id: 2
 goles_local: 2
 goles_visitante: 0
 estado: finalizado
-HTTP 303
-[Asserts]
-header "Location" contains "/"
-
-# [GET] Verificar que el partido y su estado aparecen en la página principal
-GET http://localhost:8080/?liga_id=1
 HTTP 200
 [Asserts]
+body contains "id=\"lista-partidos\""
+body contains "<strong>Boca Juniors</strong>"
 body contains "2 - 0"
+body contains "<strong>River Plate</strong>"
 body contains "<mark>finalizado</mark>"
+body contains "hx-delete=\"/partidos/1\""
+body not contains "<!doctype html>"
 
-
-# 6. ELIMINACIÓN VIA FORMULARIOS POST Y VERIFICACIÓN HTML
-
-# 1. Eliminar el partido creado
-POST http://localhost:8080/partidos/eliminar
-[FormParams]
-id: 1
-HTTP 303
+# [GET HTMX] Consultar la tabla de la Liga 1 enviando HX-Request: true (verifica fragmento y 3 pts)
+GET http://localhost:8080/?liga_id=1
+HX-Request: true
+HTTP 200
 [Asserts]
-header "Location" contains "/"
+body contains "id=\"lista-tabla\""
+body contains "<strong>Boca Juniors</strong>"
+body contains "<span class=\"pts-pill\">3</span>"
+body not contains "<!doctype html>"
+
+
+# 6. ELIMINACIÓN SIN RECARGA 
+
+# 1. Eliminar el partido 1
+DELETE http://localhost:8080/partidos/1
+HTTP 200
+[Asserts]
+body == ""
 
 # 2. Sacar a los equipos de la tabla de posiciones
-POST http://localhost:8080/tabla/eliminar
-[FormParams]
-liga_id: 1
-equipo_id: 1
-HTTP 303
+DELETE http://localhost:8080/tabla/1/1
+HTTP 200
+[Asserts]
+body == ""
 
-POST http://localhost:8080/tabla/eliminar
-[FormParams]
-liga_id: 1
-equipo_id: 2
-HTTP 303
+DELETE http://localhost:8080/tabla/1/2
+HTTP 200
+[Asserts]
+body == ""
 
 # 3. Eliminar los equipos
-POST http://localhost:8080/equipos/eliminar
-[FormParams]
-id: 1
-HTTP 303
+DELETE http://localhost:8080/equipos/1
+HTTP 200
+[Asserts]
+body == ""
 
-POST http://localhost:8080/equipos/eliminar
-[FormParams]
-id: 2
-HTTP 303
+DELETE http://localhost:8080/equipos/2
+HTTP 200
+[Asserts]
+body == ""
 
 # 4. Eliminar la liga
-POST http://localhost:8080/ligas/eliminar
-[FormParams]
-id: 1
-HTTP 303
+DELETE http://localhost:8080/ligas/1
+HTTP 200
+[Asserts]
+body == ""
 
-# 5. Comprobar en el HTML principal que las tablas volvieron a quedar vacías
+# 5. Comprobar en el HTML principal que todas las tablas volvieron a quedar vacías
 GET http://localhost:8080/
 HTTP 200
 [Asserts]
