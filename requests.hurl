@@ -171,6 +171,5 @@ body not contains "<strong>Liga Profesional</strong>"
 body not contains "<strong>Boca Juniors</strong>"
 body not contains "<strong>River Plate</strong>"
 body contains "No hay ligas registradas."
-body contains "No hay equipos registradas." == false
 body contains "No hay equipos registrados."
 body contains "No hay partidos registrados."
