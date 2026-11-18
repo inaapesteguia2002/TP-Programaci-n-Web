@@ -40,7 +40,6 @@ func main() {
 	repo := DataBase.New(db)
 
 	// 2. Instanciamos los Services inyectándoles el repo
-	// (equipos y partidos también reciben la conexión para poder abrir transacciones al borrar)
 	equipoService := &Logic.EquiposService{Repo: repo, DB: db}
 	ligaService := &Logic.LigasService{Repo: repo}
 	partidoService := &Logic.PartidosService{Repo: repo, DB: db}
@@ -55,8 +54,14 @@ func main() {
 	}
 	equipoHandler := &Handler.EquiposHandler{Service: equipoService}
 	ligaHandler := &Handler.LigasHandler{Service: ligaService}
-	partidoHandler := &Handler.PartidosHandler{Service: partidoService}
-	tablaHandler := &Handler.TablaHandler{Service: tablaService}
+	partidoHandler := &Handler.PartidosHandler{
+		Service: partidoService,
+		Equipos: equipoService,
+	}
+	tablaHandler := &Handler.TablaHandler{
+		Service: tablaService,
+		Ligas:   ligaService,
+	}
 
 	// 4. Creamos el Multiplexor (ServeMux) y configuramos las rutas
 	mux := http.NewServeMux()
@@ -64,21 +69,21 @@ func main() {
 	// Página principal (solo la raíz exacta "/")
 	mux.HandleFunc("GET /{$}", homeHandler.Index)
 
-	// Equipos
+	// Equipos (Creación y Borrado reactivo con HTMX)
 	mux.HandleFunc("POST /equipos", equipoHandler.Create)
-	mux.HandleFunc("POST /equipos/eliminar", equipoHandler.Delete)
+	mux.HandleFunc("DELETE /equipos/{id}", equipoHandler.Delete)
 
-	// Ligas
+	// Ligas (Creación y Borrado reactivo con HTMX)
 	mux.HandleFunc("POST /ligas", ligaHandler.Create)
-	mux.HandleFunc("POST /ligas/eliminar", ligaHandler.Delete)
+	mux.HandleFunc("DELETE /ligas/{id}", ligaHandler.Delete)
 
-	// Partidos
+	// Partidos (Creación y Borrado reactivo con HTMX)
 	mux.HandleFunc("POST /partidos", partidoHandler.Create)
-	mux.HandleFunc("POST /partidos/eliminar", partidoHandler.Delete)
+	mux.HandleFunc("DELETE /partidos/{id}", partidoHandler.Delete)
 
-	// Tabla de Posiciones
+	// Tabla de Posiciones (Inscripción y Borrado reactivo con HTMX)
 	mux.HandleFunc("POST /tabla", tablaHandler.Create)
-	mux.HandleFunc("POST /tabla/eliminar", tablaHandler.Delete)
+	mux.HandleFunc("DELETE /tabla/{liga_id}/{equipo_id}", tablaHandler.Delete)
 
 	// 5. Servidor de archivos estáticos
 	fileServer := http.FileServer(http.Dir("./static"))
