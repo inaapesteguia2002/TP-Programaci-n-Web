@@ -5,76 +5,82 @@ import (
 	"DeRabona/DataBase"
 )
 
-// 1. COMPONENTE: FORMULARIO DE LIGAS
+// 1. COMPONENTE: FORMULARIO DE LIGAS (CON HTMX)
 templ LigaForm() {
-	<form action="/ligas" method="POST">
+	<form
+		action="/ligas"
+		method="POST"
+		hx-post="/ligas"
+		hx-target="#lista-ligas"
+		hx-swap="outerHTML"
+		hx-on::after-request="if(event.detail.successful) this.reset()"
+	>
 		<fieldset>
 			<legend><strong>Crear Nueva Liga</strong></legend>
-			
+
 			<label for="nombre_liga">Nombre de la Liga:</label>
 			<input type="text" id="nombre_liga" name="nombre" placeholder="Ej. Liga Profesional" required/>
 
 			<label for="pais_liga">País:</label>
 			<input type="text" id="pais_liga" name="pais" placeholder="Ej. Argentina" required/>
-			
+
 			<button type="submit">Guardar Liga</button>
 		</fieldset>
 	</form>
 }
 
-// 2. COMPONENTE: FORMULARIO DE EQUIPOS
+// 2. COMPONENTE: FORMULARIO DE EQUIPOS (CON HTMX)
 templ EquipoForm() {
-	<form action="/equipos" method="POST">
+	<form
+		action="/equipos"
+		method="POST"
+		hx-post="/equipos"
+		hx-target="#lista-equipos"
+		hx-swap="outerHTML"
+		hx-on::after-request="if(event.detail.successful) this.reset()"
+	>
 		<fieldset>
 			<legend><strong>Registrar Nuevo Equipo</strong></legend>
-			
+
 			<label for="nombre_equipo">Nombre del Equipo:</label>
 			<input type="text" id="nombre_equipo" name="nombre" placeholder="Ej. Boca Juniors" required/>
-			
+
 			<button type="submit">Guardar Equipo</button>
 		</fieldset>
 	</form>
 }
 
-// 3. COMPONENTE: FORMULARIO DE PARTIDOS
+// 3. COMPONENTE: FORMULARIO DE PARTIDOS (CON HTMX)
 templ PartidoForm(ligas []DataBase.Liga, equipos []DataBase.Equipo) {
-	<form action="/partidos" method="POST">
+	<form
+		action="/partidos"
+		method="POST"
+		hx-post="/partidos"
+		hx-target="#lista-partidos"
+		hx-swap="outerHTML"
+		hx-on::after-request="if(event.detail.successful) this.reset()"
+	>
 		<fieldset>
 			<legend><strong>Cargar Partido o Resultado</strong></legend>
 
 			<label for="liga_partido">Liga:</label>
-			<select id="liga_partido" name="liga_id" required>
-				<option value="">Seleccione una Liga...</option>
-				for _, l := range ligas {
-					<option value={ fmt.Sprintf("%d", l.ID) }>{ l.Nombre }</option>
-				}
-			</select>
-			
+			@SelectLigaPartido(ligas, false)
+
 			<div class="grid">
 				<div>
 					<label for="equipo_local_id">Equipo Local:</label>
-					<select id="equipo_local_id" name="equipo_local_id" required>
-						<option value="">Seleccione Local...</option>
-						for _, eq := range equipos {
-							<option value={ fmt.Sprintf("%d", eq.ID) }>{ eq.Nombre }</option>
-						}
-					</select>
+					@SelectEquipoLocal(equipos, false)
 				</div>
 				<div>
 					<label for="goles_local">Goles Local:</label>
 					<input type="number" id="goles_local" name="goles_local" min="0" value="0" required/>
 				</div>
 			</div>
-			
+
 			<div class="grid">
 				<div>
 					<label for="equipo_visitante_id">Equipo Visitante:</label>
-					<select id="equipo_visitante_id" name="equipo_visitante_id" required>
-						<option value="">Seleccione Visitante...</option>
-						for _, eq := range equipos {
-							<option value={ fmt.Sprintf("%d", eq.ID) }>{ eq.Nombre }</option>
-						}
-					</select>
+					@SelectEquipoVisitante(equipos, false)
 				</div>
 				<div>
 					<label for="goles_visitante">Goles Visitante:</label>
@@ -87,40 +93,154 @@ templ PartidoForm(ligas []DataBase.Liga, equipos []DataBase.Equipo) {
 				<option value="pendiente">Pendiente</option>
 				<option value="finalizado">Finalizado</option>
 			</select>
-			
+
 			<button type="submit">Guardar Partido</button>
 		</fieldset>
 	</form>
 }
 
-// 4. COMPONENTE: FORMULARIO DE INSCRIPCIÓN EN TABLA
+// 4. COMPONENTE: FORMULARIO DE INSCRIPCIÓN EN TABLA (CON HTMX)
 templ TablaForm(ligas []DataBase.Liga, equipos []DataBase.Equipo) {
-	<form action="/tabla" method="POST">
+	<form
+		action="/tabla"
+		method="POST"
+		hx-post="/tabla"
+		hx-target="#lista-tabla"
+		hx-swap="outerHTML"
+		hx-on::after-request="if(event.detail.successful) this.reset()"
+	>
 		<fieldset>
 			<legend><strong>Inscribir Equipo en Liga</strong></legend>
 
 			<div class="grid">
 				<div>
 					<label for="liga_tabla">Liga:</label>
-					<select id="liga_tabla" name="liga_id" required>
-						<option value="">Seleccione Liga...</option>
-						for _, l := range ligas {
-							<option value={ fmt.Sprintf("%d", l.ID) }>{ l.Nombre }</option>
-						}
-					</select>
+					@SelectLigaTabla(ligas, false)
 				</div>
 				<div>
 					<label for="equipo_tabla">Equipo:</label>
-					<select id="equipo_tabla" name="equipo_id" required>
-						<option value="">Seleccione Equipo...</option>
-						for _, eq := range equipos {
-							<option value={ fmt.Sprintf("%d", eq.ID) }>{ eq.Nombre }</option>
-						}
-					</select>
+					@SelectEquipoTabla(equipos, false)
 				</div>
 			</div>
 
 			<button type="submit">Inscribir en Liga</button>
 		</fieldset>
 	</form>
+}
+
+// =========================================================================
+// COMPONENTES DE SELECTORES REUTILIZABLES (SOPORTAN ACTUALIZACIÓN OOB HTMX)
+// =========================================================================
+
+templ SelectLigaPartido(ligas []DataBase.Liga, oob bool) {
+	<select
+		id="liga_partido"
+		name="liga_id"
+		required
+		if oob {
+			hx-swap-oob="true"
+		}
+	>
+		<option value="">Seleccione una Liga...</option>
+		for _, l := range ligas {
+			<option value={ fmt.Sprintf("%d", l.ID) }>{ l.Nombre }</option>
+		}
+	</select>
+}
+
+templ SelectLigaTabla(ligas []DataBase.Liga, oob bool) {
+	<select
+		id="liga_tabla"
+		name="liga_id"
+		required
+		if oob {
+			hx-swap-oob="true"
+		}
+	>
+		<option value="">Seleccione Liga...</option>
+		for _, l := range ligas {
+			<option value={ fmt.Sprintf("%d", l.ID) }>{ l.Nombre }</option>
+		}
+	</select>
+}
+
+templ SelectLigaFiltro(ligas []DataBase.Liga, ligaSeleccionada int32, oob bool) {
+	<select
+		id="liga_filtro_tabla"
+		name="liga_id"
+		required
+		if oob {
+			hx-swap-oob="true"
+		}
+	>
+		<option value="">-- Seleccionar Liga para ver posiciones --</option>
+		for _, l := range ligas {
+			<option value={ fmt.Sprintf("%d", l.ID) } selected?={ l.ID == ligaSeleccionada }>
+				{ l.Nombre } ({ l.Pais })
+			</option>
+		}
+	</select>
+}
+
+templ SelectEquipoLocal(equipos []DataBase.Equipo, oob bool) {
+	<select
+		id="equipo_local_id"
+		name="equipo_local_id"
+		required
+		if oob {
+			hx-swap-oob="true"
+		}
+	>
+		<option value="">Seleccione Local...</option>
+		for _, eq := range equipos {
+			<option value={ fmt.Sprintf("%d", eq.ID) }>{ eq.Nombre }</option>
+		}
+	</select>
+}
+
+templ SelectEquipoVisitante(equipos []DataBase.Equipo, oob bool) {
+	<select
+		id="equipo_visitante_id"
+		name="equipo_visitante_id"
+		required
+		if oob {
+			hx-swap-oob="true"
+		}
+	>
+		<option value="">Seleccione Visitante...</option>
+		for _, eq := range equipos {
+			<option value={ fmt.Sprintf("%d", eq.ID) }>{ eq.Nombre }</option>
+		}
+	</select>
+}
+
+templ SelectEquipoTabla(equipos []DataBase.Equipo, oob bool) {
+	<select
+		id="equipo_tabla"
+		name="equipo_id"
+		required
+		if oob {
+			hx-swap-oob="true"
+		}
+	>
+		<option value="">Seleccione Equipo...</option>
+		for _, eq := range equipos {
+			<option value={ fmt.Sprintf("%d", eq.ID) }>{ eq.Nombre }</option>
+		}
+	</select>
+}
+
+templ AlertaErrorPartidos(errorMsg string, oob bool) {
+	<div
+		id="error-partidos"
+		if oob {
+			hx-swap-oob="true"
+		}
+	>
+		if errorMsg != "" {
+			<p role="alert" style="background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px;">
+				{ errorMsg }
+			</p>
+		}
+	</div>
 }
