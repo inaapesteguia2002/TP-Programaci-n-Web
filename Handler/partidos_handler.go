@@ -15,6 +15,8 @@ import (
 type PartidosHandler struct {
 	Service *Logic.PartidosService
 	Equipos *Logic.EquiposService
+	Ligas *Logic.LigasService
+	Tabla *Logic.TablaService
 }
 
 // renderPartidos devuelve el fragmento actualizado de la lista de partidos junto con el estado de error (si lo hubiera).
