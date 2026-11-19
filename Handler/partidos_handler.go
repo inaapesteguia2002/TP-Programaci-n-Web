@@ -142,7 +142,6 @@ func (h *PartidosHandler) renderPartidosConTabla(w http.ResponseWriter, r *http.
 		}
 	}
 
-	// Si no se inyectaron Ligas/Tabla (ej. en algún test unitario), cae al render clásico
 	if h.Ligas == nil || h.Tabla == nil {
 		if err := Views.PartidoListConEstado(partidos, equipos, "").Render(ctx, w); err != nil {
 			log.Printf("renderizar PartidoList: %v", err)
