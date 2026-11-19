@@ -15,8 +15,8 @@ import (
 type PartidosHandler struct {
 	Service *Logic.PartidosService
 	Equipos *Logic.EquiposService
-	Ligas *Logic.LigasService
-	Tabla *Logic.TablaService
+	Ligas   *Logic.LigasService
+	Tabla   *Logic.TablaService
 }
 
 // renderPartidos devuelve el fragmento actualizado de la lista de partidos junto con el estado de error (si lo hubiera).
@@ -97,7 +97,7 @@ func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.renderPartidos(w, r, int32(ligaID))
+	h.renderPartidosConTabla(w, r, int32(ligaID))
 }
 
 // Delete atiende DELETE /partidos/{id}: obtiene el ID de la URL, elimina el partido
