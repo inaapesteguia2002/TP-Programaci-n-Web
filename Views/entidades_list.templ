@@ -176,7 +176,7 @@ templ PartidoListConTabla(partidos []DataBase.Partido, equipos []DataBase.Equipo
 	@TablaListOOB(ligas, tabla, ligaSeleccionada)
 }
 
-// 4. TABLA DE POSICIONES PROLIJA A LO ANCHO
+// 4. TABLA DE POSICIONES
 templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32) {
 	@tablaListRender(ligas, tabla, ligaSeleccionada, false)
 }
