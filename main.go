@@ -57,6 +57,8 @@ func main() {
 	partidoHandler := &Handler.PartidosHandler{
 		Service: partidoService,
 		Equipos: equipoService,
+		Ligas: ligaService,
+		Tabla: tablaService,
 	}
 	tablaHandler := &Handler.TablaHandler{
 		Service: tablaService,
