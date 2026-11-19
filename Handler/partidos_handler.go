@@ -97,7 +97,7 @@ func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.renderPartidos(w, r, "")
+	h.renderPartidos(w, r, int32(ligaID))
 }
 
 // Delete atiende DELETE /partidos/{id}: obtiene el ID de la URL, elimina el partido
