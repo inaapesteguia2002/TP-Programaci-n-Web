@@ -101,8 +101,11 @@ func (h *PartidosHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // Delete atiende DELETE /partidos/{id}: obtiene el ID de la URL, elimina el partido
-// y devuelve una respuesta vacía con 200 OK para que HTMX quite la fila del DOM.
+// y devuelve 200 OK. Si la petición viene desde HTMX, adjunta la tabla de posiciones
+// actualizada por OOB para reflejar los puntos revertidos mientras elimina el <tr>.
 func (h *PartidosHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	idStr := r.PathValue("id")
 	if idStr == "" {
 		idStr = r.FormValue("id")
@@ -113,9 +116,46 @@ func (h *PartidosHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.Service.DeletePartido(r.Context(), int32(id)); err != nil {
+	// Antes de eliminar, buscamos a qué liga pertenece el partido para poder actualizar su tabla
+	var ligaID int32
+	if r.Header.Get("HX-Request") == "true" && h.Ligas != nil && h.Tabla != nil {
+		if partidos, err := h.Service.ListPartidos(ctx); err == nil {
+			for _, p := range partidos {
+				if p.ID == int32(id) {
+					ligaID = p.LigaID
+					break
+				}
+			}
+		}
+	}
+
+	if err := h.Service.DeletePartido(ctx, int32(id)); err != nil {
 		log.Printf("eliminar partido: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Si es una petición HTMX y encontramos la liga, devolvemos solo el fragmento OOB de la tabla.
+	// HTMX actualiza #lista-tabla y, al quedar vacío el contenido principal, borra la fila <tr>.
+	if ligaID > 0 {
+		ligas, err := h.Ligas.ListLigas(ctx)
+		if err != nil {
+			log.Printf("listar ligas tras eliminar partido: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		tabla, err := h.Tabla.ObtenerTabla(ctx, ligaID)
+		if err != nil {
+			log.Printf("obtener tabla tras eliminar partido: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		if err := Views.TablaListOOB(ligas, tabla, ligaID).Render(ctx, w); err != nil {
+			log.Printf("renderizar TablaListOOB tras eliminar partido: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
 
