@@ -169,9 +169,30 @@ templ PartidoListConEstado(partidos []DataBase.Partido, equipos []DataBase.Equip
 	@AlertaErrorPartidos(errorMsg, true)
 }
 
+// Respuesta de creación de Partido + actualización OOB de la alerta y de la Tabla de Posiciones
+templ PartidoListConTabla(partidos []DataBase.Partido, equipos []DataBase.Equipo, ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32) {
+	@PartidoList(partidos, equipos)
+	@AlertaErrorPartidos("", true)
+	@TablaListOOB(ligas, tabla, ligaSeleccionada)
+}
+
 // 4. TABLA DE POSICIONES PROLIJA A LO ANCHO
 templ TablaList(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32) {
-	<div id="lista-tabla">
+	@tablaListRender(ligas, tabla, ligaSeleccionada, false)
+}
+
+// Versión Out-of-Band para actualizar la tabla de rebote desde otra acción (ej. crear partido)
+templ TablaListOOB(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32) {
+	@tablaListRender(ligas, tabla, ligaSeleccionada, true)
+}
+
+templ tablaListRender(ligas []DataBase.Liga, tabla []DataBase.GetTablaPorLigaRow, ligaSeleccionada int32, oob bool) {
+	<div
+		id="lista-tabla"
+		if oob {
+			hx-swap-oob="true"
+		}
+	>
 		<form
 			action="/#seccion-tabla"
 			method="GET"
