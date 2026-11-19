@@ -121,3 +121,52 @@ func (h *PartidosHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func (h *PartidosHandler) renderPartidosConTabla(w http.ResponseWriter, r *http.Request, ligaID int32) {
+	ctx := r.Context()
+
+	partidos, err := h.Service.ListPartidos(ctx)
+	if err != nil {
+		log.Printf("listar partidos: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	var equipos []DataBase.Equipo
+	if h.Equipos != nil {
+		equipos, err = h.Equipos.ListEquipos(ctx)
+		if err != nil {
+			log.Printf("listar equipos para partidos: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Si no se inyectaron Ligas/Tabla (ej. en algún test unitario), cae al render clásico
+	if h.Ligas == nil || h.Tabla == nil {
+		if err := Views.PartidoListConEstado(partidos, equipos, "").Render(ctx, w); err != nil {
+			log.Printf("renderizar PartidoList: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	ligas, err := h.Ligas.ListLigas(ctx)
+	if err != nil {
+		log.Printf("listar ligas para tabla: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	tabla, err := h.Tabla.ObtenerTabla(ctx, ligaID)
+	if err != nil {
+		log.Printf("obtener tabla tras crear partido: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := Views.PartidoListConTabla(partidos, equipos, ligas, tabla, ligaID).Render(ctx, w); err != nil {
+		log.Printf("renderizar PartidoListConTabla: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
+}
