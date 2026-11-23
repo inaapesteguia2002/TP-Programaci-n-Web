@@ -33,12 +33,12 @@ Para probar la interfaz y el funcionamiento integral del sistema, sigue estos pa
 
 
 **Clonar el repositorio** y abrir una terminal en el directorio raíz.
-**Posicionarse en la rama correspondiente a la entrega (`tp5`)**:
+**Posicionarse en la rama correspondiente a la entrega (`tp6`)**:
 ```bash
 
 git fetch origin
 
-git checkout tp5
+git checkout tp6
 
 ```
 
