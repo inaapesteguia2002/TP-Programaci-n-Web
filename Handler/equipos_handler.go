@@ -52,6 +52,8 @@ func (h *EquiposHandler) Create(w http.ResponseWriter, r *http.Request) {
 // Delete atiende DELETE /equipos/{id}: obtiene el ID de la URL, elimina el equipo
 // y devuelve una respuesta vacía con 200 OK para que HTMX quite la fila del DOM.
 func (h *EquiposHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	idStr := r.PathValue("id")
 	if idStr == "" {
 		idStr = r.FormValue("id")
@@ -62,9 +64,23 @@ func (h *EquiposHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.Service.DeleteEquipo(r.Context(), int32(id)); err != nil {
+	if err := h.Service.DeleteEquipo(ctx, int32(id)); err != nil {
 		log.Printf("eliminar equipo: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if r.Header.Get("HX-Request") == "true" {
+		equipos, err := h.Service.ListEquipos(ctx)
+		if err != nil {
+			log.Printf("listar equipos tras eliminar: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+		if err := Views.SelectsEquiposOOB(equipos).Render(ctx, w); err != nil {
+			log.Printf("renderizar SelectsEquiposOOB: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
 
