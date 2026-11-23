@@ -17,7 +17,6 @@ ORDER BY nombre ASC;
 UPDATE equipos 
 SET nombre = $2 
 WHERE id = $1
-RETURNING *; -- Devuelve el id asiginado del equipo actualizado
 
 -- name: DeleteEquipo :exec
 DELETE FROM equipos 
