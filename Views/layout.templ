@@ -55,13 +55,6 @@ templ IndexPage(ligas []DataBase.Liga, equipos []DataBase.Equipo, partidos []Dat
 			</p>
 		</div>
 
-		<!-- Alerta global si viene un error por query param -->
-		if errorMsg != "" {
-			<p role="alert" style="background: #fdecea; color: #b71c1c; border-left: 4px solid #b71c1c; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
-				<strong>Atención:</strong> { errorMsg }
-			</p>
-		}
-
 		<section id="seccion-ligas">
 			<article>
 				<header><strong>Ligas y Competiciones</strong></header>
