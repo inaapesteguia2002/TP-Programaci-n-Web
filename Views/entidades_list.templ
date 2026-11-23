@@ -59,12 +59,17 @@ templ LigaList(ligas []DataBase.Liga) {
 	</div>
 }
 
-// Respuesta de creación de Liga + actualización OOB de los <select> de ligas
-templ LigaListConOOB(ligas []DataBase.Liga) {
-	@LigaList(ligas)
+// Actualización OOB de todos los <select> de ligas
+templ SelectsLigasOOB(ligas []DataBase.Liga) {
 	@SelectLigaPartido(ligas, true)
 	@SelectLigaTabla(ligas, true)
 	@SelectLigaFiltro(ligas, 0, true)
+}
+
+// Respuesta de creación de Liga + actualización OOB de los <select> de ligas
+templ LigaListConOOB(ligas []DataBase.Liga) {
+	@LigaList(ligas)
+	@SelectsLigasOOB(ligas)
 }
 
 // 2. LISTA DE EQUIPOS
@@ -109,12 +114,17 @@ templ EquipoList(equipos []DataBase.Equipo) {
 	</div>
 }
 
-// Respuesta de creación de Equipo + actualización OOB de los <select> de equipos
-templ EquipoListConOOB(equipos []DataBase.Equipo) {
-	@EquipoList(equipos)
+// Actualización OOB de todos los <select> de equipos
+templ SelectsEquiposOOB(equipos []DataBase.Equipo) {
 	@SelectEquipoLocal(equipos, true)
 	@SelectEquipoVisitante(equipos, true)
 	@SelectEquipoTabla(equipos, true)
+}
+
+// Respuesta de creación de Equipo + actualización OOB de los <select> de equipos
+templ EquipoListConOOB(equipos []DataBase.Equipo) {
+	@EquipoList(equipos)
+	@SelectsEquiposOOB(equipos)
 }
 
 // 3. LISTA DE PARTIDOS
