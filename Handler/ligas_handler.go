@@ -55,6 +55,8 @@ func (h *LigasHandler) Create(w http.ResponseWriter, r *http.Request) {
 // Delete atiende DELETE /ligas/{id}: obtiene el ID de la URL, elimina la liga
 // y devuelve una respuesta vacía con 200 OK para que HTMX quite la fila del DOM.
 func (h *LigasHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	idStr := r.PathValue("id")
 	if idStr == "" {
 		idStr = r.FormValue("id")
@@ -65,9 +67,23 @@ func (h *LigasHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.Service.DeleteLiga(r.Context(), int32(id)); err != nil {
+	if err := h.Service.DeleteLiga(ctx, int32(id)); err != nil {
 		log.Printf("eliminar liga: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if r.Header.Get("HX-Request") == "true" {
+		ligas, err := h.Service.ListLigas(ctx)
+		if err != nil {
+			log.Printf("listar ligas tras eliminar: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+		if err := Views.SelectsLigasOOB(ligas).Render(ctx, w); err != nil {
+			log.Printf("renderizar SelectsLigasOOB: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
 
